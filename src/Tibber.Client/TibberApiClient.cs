@@ -15,6 +15,8 @@ namespace Tibber.Client
 {
     public class TibberApiClient : IDisposable
     {
+        public const string BaseUrl = "https://api.tibber.com/v1-beta/";
+
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
         private static readonly JsonSerializerSettings JsonSerializerSettings =
             new JsonSerializerSettings
@@ -38,7 +40,7 @@ namespace Tibber.Client
             _httpClient =
                 new HttpClient(messageHandler)
                 {
-                    BaseAddress = new Uri("https://api.tibber.com/v1-beta/"),
+                    BaseAddress = new Uri(BaseUrl),
                     Timeout = timeout ?? DefaultTimeout,
                     DefaultRequestHeaders =
                     {
@@ -56,6 +58,13 @@ namespace Tibber.Client
         {
             using (var response = await _httpClient.PostAsync($"gql?token={_accessToken}", JsonContent(new { query }), cancellationToken))
                 return await JsonResult(response);
+        }
+
+        public async Task<TibberLiveMeasurementReader> CreateLiveMeasurementReader(Guid homeId, CancellationToken cancellationToken = default)
+        {
+            var liveMeasurementReader = new TibberLiveMeasurementReader(_accessToken, homeId);
+            await liveMeasurementReader.Initialize(cancellationToken);
+            return liveMeasurementReader;
         }
 
         private static HttpContent JsonContent(object data) =>
