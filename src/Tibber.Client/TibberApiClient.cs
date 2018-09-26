@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,6 +23,8 @@ namespace Tibber.Client
                 Converters = { new StringEnumConverter() },
                 DateParseHandling = DateParseHandling.DateTimeOffset
             };
+
+        private static readonly JsonSerializer Serializer = JsonSerializer.Create(JsonSerializerSettings);
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
@@ -58,10 +61,13 @@ namespace Tibber.Client
         private static HttpContent JsonContent(object data) =>
             new StringContent(JsonConvert.SerializeObject(data, JsonSerializerSettings), Encoding.UTF8, "application/json");
 
-        private static Task<TibberApiQueryResult> JsonResult(HttpResponseMessage response)
+        private static async Task<TibberApiQueryResult> JsonResult(HttpResponseMessage response)
         {
             response.EnsureSuccessStatusCode();
-            return response.Content.ReadAsStringAsync().ContinueWith(t => JsonConvert.DeserializeObject<TibberApiQueryResult>(t.Result));
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(streamReader))
+                return Serializer.Deserialize<TibberApiQueryResult>(jsonReader);
         }
     }
 
