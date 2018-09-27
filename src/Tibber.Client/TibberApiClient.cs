@@ -63,7 +63,10 @@ namespace Tibber.Client
         }
 
         public Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default) =>
-            Query(new TibberQueryBuilder().WithDefaults().Build(), cancellationToken);
+            Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
+
+        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, ConsumptionResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default) =>
+            (await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken)).Data?.Viewer?.Home?.Consumption?.Nodes;
 
         public async Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default)
         {
