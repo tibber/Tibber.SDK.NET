@@ -17,6 +17,7 @@ namespace Tibber.Client
     {
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
 
+        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
         private static readonly JsonSerializerSettings JsonSerializerSettings =
             new JsonSerializerSettings
@@ -27,6 +28,8 @@ namespace Tibber.Client
             };
 
         private static readonly JsonSerializer Serializer = JsonSerializer.Create(JsonSerializerSettings);
+
+        private readonly Dictionary<Guid, LiveMeasurementListener> _liveMeasurementListeners = new Dictionary<Guid, LiveMeasurementListener>();
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
@@ -49,7 +52,15 @@ namespace Tibber.Client
                 };
         }
 
-        public void Dispose() => _httpClient.Dispose();
+        public void Dispose()
+        {
+            foreach (var liveMeasurementListener in _liveMeasurementListeners.Values)
+                liveMeasurementListener.Dispose();
+
+            _liveMeasurementListeners.Clear();
+
+            _httpClient.Dispose();
+        }
 
         public Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default) =>
             Query(new TibberQueryBuilder().WithDefaults().Build(), cancellationToken);
@@ -60,11 +71,34 @@ namespace Tibber.Client
                 return await JsonResult(response);
         }
 
-        public async Task<TibberLiveMeasurementReader> CreateLiveMeasurementReader(Guid homeId, CancellationToken cancellationToken = default)
+        public async Task<IObservable<LiveMeasurement>> StartLiveMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
         {
-            var liveMeasurementReader = new TibberLiveMeasurementReader(_accessToken, homeId);
+            await Semaphore.WaitAsync(cancellationToken);
+
+            if (_liveMeasurementListeners.TryGetValue(homeId, out var listener))
+                listener.Dispose();
+
+            var liveMeasurementReader = new LiveMeasurementListener(_accessToken, homeId);
+            _liveMeasurementListeners[homeId] = liveMeasurementReader;
+
             await liveMeasurementReader.Initialize(cancellationToken);
+
+            Semaphore.Release();
+
             return liveMeasurementReader;
+        }
+
+        public void StopLiveMeasurementListener(Guid homeId)
+        {
+            Semaphore.Wait();
+
+            if (_liveMeasurementListeners.TryGetValue(homeId, out var listener))
+            {
+                _liveMeasurementListeners.Remove(homeId);
+                listener.Dispose();
+            }
+
+            Semaphore.Release();
         }
 
         private static HttpContent JsonContent(object data) =>
