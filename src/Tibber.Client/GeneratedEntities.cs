@@ -9,7 +9,6 @@ using System.Text;
 namespace Tibber.Client
 {
     #region base classes
-
     public class FieldMetadata
     {
         public string Name { get; set; }
@@ -210,11 +209,9 @@ namespace Tibber.Client
             return (TQueryBuilder)this;
         }
     }
-
     #endregion
 
     #region builder classes
-
     public enum HomeAvatar
     {
         [EnumMember(Value = "APARTMENT")] Apartment,
@@ -258,6 +255,20 @@ namespace Tibber.Client
         [EnumMember(Value = "WEEKLY")] Weekly,
         [EnumMember(Value = "MONTHLY")] Monthly,
         [EnumMember(Value = "ANNUAL")] Annual
+    }
+
+    public enum AppScreen
+    {
+        [EnumMember(Value = "HOME")] Home,
+        [EnumMember(Value = "REPORTS")] Reports,
+        [EnumMember(Value = "CONSUMPTION")] Consumption,
+        [EnumMember(Value = "COMPARISON")] Comparison,
+        [EnumMember(Value = "DISAGGREGATION")] Disaggregation,
+        [EnumMember(Value = "HOME_PROFILE")] HomeProfile,
+        [EnumMember(Value = "CUSTOMER_PROFILE")] CustomerProfile,
+        [EnumMember(Value = "METER_READING")] MeterReading,
+        [EnumMember(Value = "NOTIFICATIONS")] Notifications,
+        [EnumMember(Value = "INVOICES")] Invoices
     }
 
     public class TibberQueryBuilder : GraphQlQueryBuilder<TibberQueryBuilder>
@@ -317,7 +328,8 @@ namespace Tibber.Client
                 new FieldMetadata { Name = "meteringPointData", IsComplex = true, QueryBuilderType = typeof(MeteringPointDataQueryBuilder) },
                 new FieldMetadata { Name = "currentSubscription", IsComplex = true, QueryBuilderType = typeof(SubscriptionQueryBuilder) },
                 new FieldMetadata { Name = "subscriptions", IsComplex = true, QueryBuilderType = typeof(SubscriptionQueryBuilder) },
-                new FieldMetadata { Name = "consumption", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionConnectionQueryBuilder) }
+                new FieldMetadata { Name = "consumption", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionConnectionQueryBuilder) },
+                new FieldMetadata { Name = "features", IsComplex = true, QueryBuilderType = typeof(HomeFeaturesQueryBuilder) }
             };
 
         public HomeQueryBuilder WithId() => WithScalarField("id");
@@ -368,6 +380,8 @@ namespace Tibber.Client
 
             return WithObjectField("consumption", homeConsumptionConnectionQueryBuilder, args);
         }
+
+        public HomeQueryBuilder WithFeatures(HomeFeaturesQueryBuilder homeFeaturesQueryBuilder) => WithObjectField("features", homeFeaturesQueryBuilder);
     }
 
     public class AddressQueryBuilder : GraphQlQueryBuilder<AddressQueryBuilder>
@@ -581,7 +595,8 @@ namespace Tibber.Client
                 new FieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) }
             };
 
-        public SubscriptionPriceConnectionQueryBuilder WithPageInfo(SubscriptionPriceConnectionPageInfoQueryBuilder subscriptionPriceConnectionPageInfoQueryBuilder) => WithObjectField("pageInfo", subscriptionPriceConnectionPageInfoQueryBuilder);
+        public SubscriptionPriceConnectionQueryBuilder WithPageInfo(SubscriptionPriceConnectionPageInfoQueryBuilder subscriptionPriceConnectionPageInfoQueryBuilder) =>
+            WithObjectField("pageInfo", subscriptionPriceConnectionPageInfoQueryBuilder);
 
         public SubscriptionPriceConnectionQueryBuilder WithEdges(SubscriptionPriceEdgeQueryBuilder subscriptionPriceEdgeQueryBuilder) => WithObjectField("edges", subscriptionPriceEdgeQueryBuilder);
 
@@ -747,18 +762,33 @@ namespace Tibber.Client
         public HomeConsumptionEdgeQueryBuilder WithNode(ConsumptionQueryBuilder consumptionQueryBuilder) => WithObjectField("node", consumptionQueryBuilder);
     }
 
+    public class HomeFeaturesQueryBuilder : GraphQlQueryBuilder<HomeFeaturesQueryBuilder>
+    {
+        protected override IList<FieldMetadata> AllFields { get; } =
+            new[]
+            {
+                new FieldMetadata { Name = "realTimeConsumptionEnabled" }
+            };
+
+        public HomeFeaturesQueryBuilder WithRealTimeConsumptionEnabled() => WithScalarField("realTimeConsumptionEnabled");
+    }
+
     public class RootMutationQueryBuilder : GraphQlQueryBuilder<RootMutationQueryBuilder>
     {
         protected override IList<FieldMetadata> AllFields { get; } =
             new[]
             {
                 new FieldMetadata { Name = "sendMeterReading", IsComplex = true, QueryBuilderType = typeof(MeterReadingResponseQueryBuilder) },
-                new FieldMetadata { Name = "updateHome", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) }
+                new FieldMetadata { Name = "updateHome", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) },
+                new FieldMetadata { Name = "sendPushNotification", IsComplex = true, QueryBuilderType = typeof(PushNotificationResponseQueryBuilder) }
             };
 
         public RootMutationQueryBuilder WithSendMeterReading(MeterReadingResponseQueryBuilder meterReadingResponseQueryBuilder) => WithObjectField("sendMeterReading", meterReadingResponseQueryBuilder);
 
         public RootMutationQueryBuilder WithUpdateHome(HomeQueryBuilder homeQueryBuilder) => WithObjectField("updateHome", homeQueryBuilder);
+
+        public RootMutationQueryBuilder WithSendPushNotification(PushNotificationResponseQueryBuilder pushNotificationResponseQueryBuilder) =>
+            WithObjectField("sendPushNotification", pushNotificationResponseQueryBuilder);
     }
 
     public class MeterReadingResponseQueryBuilder : GraphQlQueryBuilder<MeterReadingResponseQueryBuilder>
@@ -768,8 +798,7 @@ namespace Tibber.Client
             {
                 new FieldMetadata { Name = "homeId" },
                 new FieldMetadata { Name = "time" },
-                new FieldMetadata { Name = "reading" },
-                new FieldMetadata { Name = "success" }
+                new FieldMetadata { Name = "reading" }
             };
 
         public MeterReadingResponseQueryBuilder WithHomeId() => WithScalarField("homeId");
@@ -777,14 +806,56 @@ namespace Tibber.Client
         public MeterReadingResponseQueryBuilder WithTime() => WithScalarField("time");
 
         public MeterReadingResponseQueryBuilder WithReading() => WithScalarField("reading");
-
-        public MeterReadingResponseQueryBuilder WithSuccess() => WithScalarField("success");
     }
 
+    public class PushNotificationResponseQueryBuilder : GraphQlQueryBuilder<PushNotificationResponseQueryBuilder>
+    {
+        protected override IList<FieldMetadata> AllFields { get; } =
+            new[]
+            {
+                new FieldMetadata { Name = "successful" },
+                new FieldMetadata { Name = "pushedToNumberOfDevices" }
+            };
+
+        public PushNotificationResponseQueryBuilder WithSuccessful() => WithScalarField("successful");
+
+        public PushNotificationResponseQueryBuilder WithPushedToNumberOfDevices() => WithScalarField("pushedToNumberOfDevices");
+    }
+
+    public class LiveMeasurementQueryBuilder : GraphQlQueryBuilder<LiveMeasurementQueryBuilder>
+    {
+        protected override IList<FieldMetadata> AllFields { get; } =
+            new[]
+            {
+                new FieldMetadata { Name = "timestamp" },
+                new FieldMetadata { Name = "power" },
+                new FieldMetadata { Name = "accumulatedConsumption" },
+                new FieldMetadata { Name = "accumulatedCost" },
+                new FieldMetadata { Name = "currency" },
+                new FieldMetadata { Name = "minPower" },
+                new FieldMetadata { Name = "averagePower" },
+                new FieldMetadata { Name = "maxPower" }
+            };
+
+        public LiveMeasurementQueryBuilder WithTimestamp() => WithScalarField("timestamp");
+
+        public LiveMeasurementQueryBuilder WithPower() => WithScalarField("power");
+
+        public LiveMeasurementQueryBuilder WithAccumulatedConsumption() => WithScalarField("accumulatedConsumption");
+
+        public LiveMeasurementQueryBuilder WithAccumulatedCost() => WithScalarField("accumulatedCost");
+
+        public LiveMeasurementQueryBuilder WithCurrency() => WithScalarField("currency");
+
+        public LiveMeasurementQueryBuilder WithMinPower() => WithScalarField("minPower");
+
+        public LiveMeasurementQueryBuilder WithAveragePower() => WithScalarField("averagePower");
+
+        public LiveMeasurementQueryBuilder WithMaxPower() => WithScalarField("maxPower");
+    }
     #endregion
 
     #region data classes
-
     public class Query
     {
         /// <summary>
@@ -881,6 +952,8 @@ namespace Tibber.Client
         /// Consumption connection
         /// </summary>
         public HomeConsumptionConnection Consumption { get; set; }
+
+        public HomeFeatures Features { get; set; }
     }
 
     public class Address
@@ -1199,6 +1272,14 @@ namespace Tibber.Client
         public ConsumptionEntry Node { get; set; }
     }
 
+    public class HomeFeatures
+    {
+        /// <summary>
+        /// Tibber pulse is paired.
+        /// </summary>
+        public bool? RealTimeConsumptionEnabled { get; set; }
+    }
+
     public class RootMutation
     {
         /// <summary>
@@ -1210,6 +1291,11 @@ namespace Tibber.Client
         /// Update home information
         /// </summary>
         public Home UpdateHome { get; set; }
+
+        /// <summary>
+        /// Send notification to Tibber app on registered devices
+        /// </summary>
+        public PushNotificationResponse SendPushNotification { get; set; }
     }
 
     public class MeterReadingResponse
@@ -1217,8 +1303,12 @@ namespace Tibber.Client
         public string HomeId { get; set; }
         public string Time { get; set; }
         public int? Reading { get; set; }
-        public bool? Success { get; set; }
     }
 
+    public class PushNotificationResponse
+    {
+        public bool? Successful { get; set; }
+        public int? PushedToNumberOfDevices { get; set; }
+    }
     #endregion
 }

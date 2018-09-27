@@ -87,6 +87,15 @@ namespace Tibber.Client
                     }
                     catch (WebSocketException exception) when (exception.InnerException is OperationCanceledException)
                     {
+                        Dispose();
+                        return;
+                    }
+                    catch (Exception exception)
+                    {
+                        foreach (var observer in _liveMeasurementObservers)
+                            observer.OnError(exception);
+
+                        Dispose();
                         return;
                     }
 
