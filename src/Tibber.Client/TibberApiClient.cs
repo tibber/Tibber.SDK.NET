@@ -53,7 +53,7 @@ namespace Tibber.Client
                     DefaultRequestHeaders =
                     {
                         AcceptEncoding = { new StringWithQualityHeaderValue("gzip") },
-                        UserAgent = { new ProductInfoHeaderValue("TibberSDK", "1.0") }
+                        UserAgent = { new ProductInfoHeaderValue("Tibber-SDK.NET", "1.0") }
                     }
                 };
         }
@@ -103,8 +103,20 @@ namespace Tibber.Client
         /// <returns></returns>
         public async Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default)
         {
-            using (var response = await _httpClient.PostAsync($"gql?token={_accessToken}", JsonContent(new { query }), cancellationToken))
-                return await JsonResult(response);
+            var relativeUri = $"gql?token={_accessToken}";
+
+            var requestStart = DateTimeOffset.UtcNow;
+
+            using (var response = await _httpClient.PostAsync(relativeUri, JsonContent(new { query }), cancellationToken))
+            {
+                if (!response.IsSuccessStatusCode)
+                    throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var streamReader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                    return Serializer.Deserialize<TibberApiQueryResult>(jsonReader);
+            }
         }
 
         /// <summary>
@@ -157,26 +169,10 @@ namespace Tibber.Client
         private static HttpContent JsonContent(object data) =>
             new StringContent(JsonConvert.SerializeObject(data, JsonSerializerSettings), Encoding.UTF8, "application/json");
 
-        private static async Task<TibberApiQueryResult> JsonResult(HttpResponseMessage response)
-        {
-            response.EnsureSuccessStatusCode();
-            using (var stream = await response.Content.ReadAsStreamAsync())
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
-                return Serializer.Deserialize<TibberApiQueryResult>(jsonReader);
-        }
-
         private static void ValidateResult(TibberApiQueryResult result)
         {
             if (result.Errors != null && result.Errors.Any())
                 throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, result.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
-        }
-    }
-
-    public class TibberApiException : Exception
-    {
-        internal TibberApiException(string message) : base(message)
-        {
         }
     }
 
