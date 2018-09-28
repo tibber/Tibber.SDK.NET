@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -72,8 +73,12 @@ namespace Tibber.Client
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default) =>
-            Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
+        public async Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
+            ValidateResult(result);
+            return result;
+        }
 
         /// <summary>
         /// Gets home consumption.
@@ -83,8 +88,12 @@ namespace Tibber.Client
         /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
         /// <param name="cancellationToken"></param>
         /// <returns>consumption entries</returns>
-        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, ConsumptionResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default) =>
-            (await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken)).Data?.Viewer?.Home?.Consumption?.Nodes;
+        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, ConsumptionResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken);
+            ValidateResult(result);
+            return result.Data?.Viewer?.Home?.Consumption?.Nodes;
+        }
 
         /// <summary>
         /// Executes raw GraphQL query.
@@ -108,17 +117,24 @@ namespace Tibber.Client
         {
             await Semaphore.WaitAsync(cancellationToken);
 
-            if (_liveMeasurementListeners.TryGetValue(homeId, out var listener))
-                listener.Dispose();
+            LiveMeasurementListener liveMeasurementListener;
 
-            var liveMeasurementReader = new LiveMeasurementListener(_accessToken, homeId);
-            _liveMeasurementListeners[homeId] = liveMeasurementReader;
+            try
+            {
+                if (_liveMeasurementListeners.TryGetValue(homeId, out var listener))
+                    listener.Dispose();
 
-            await liveMeasurementReader.Initialize(cancellationToken);
+                liveMeasurementListener = new LiveMeasurementListener(_accessToken, homeId);
+                _liveMeasurementListeners[homeId] = liveMeasurementListener;
 
-            Semaphore.Release();
+                await liveMeasurementListener.Initialize(cancellationToken);
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
 
-            return liveMeasurementReader;
+            return liveMeasurementListener;
         }
 
         /// <summary>
@@ -148,6 +164,19 @@ namespace Tibber.Client
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
                 return Serializer.Deserialize<TibberApiQueryResult>(jsonReader);
+        }
+
+        private static void ValidateResult(TibberApiQueryResult result)
+        {
+            if (result.Errors != null && result.Errors.Any())
+                throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, result.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
+        }
+    }
+
+    public class TibberApiException : Exception
+    {
+        internal TibberApiException(string message) : base(message)
+        {
         }
     }
 

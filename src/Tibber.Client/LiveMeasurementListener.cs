@@ -122,7 +122,14 @@ namespace Tibber.Client
         public void Dispose()
         {
             foreach (var observer in _liveMeasurementObservers)
-                observer.OnCompleted();
+                try
+                {
+                    observer.OnCompleted();
+                }
+                catch (Exception)
+                {
+                    // disposing not suppose to throw
+                }
 
             _cancellationTokenSource.Dispose();
             _wssClient.Dispose();
