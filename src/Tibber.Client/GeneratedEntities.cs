@@ -389,7 +389,6 @@ namespace Tibber.Client
         protected override IList<FieldMetadata> AllFields { get; } =
             new[]
             {
-                new FieldMetadata { Name = "id" },
                 new FieldMetadata { Name = "address1" },
                 new FieldMetadata { Name = "address2" },
                 new FieldMetadata { Name = "address3" },
@@ -399,8 +398,6 @@ namespace Tibber.Client
                 new FieldMetadata { Name = "latitude" },
                 new FieldMetadata { Name = "longitude" }
             };
-
-        public AddressQueryBuilder WithId() => WithScalarField("id");
 
         public AddressQueryBuilder WithAddress1() => WithScalarField("address1");
 
@@ -819,38 +816,6 @@ namespace Tibber.Client
 
         public PushNotificationResponseQueryBuilder WithPushedToNumberOfDevices() => WithScalarField("pushedToNumberOfDevices");
     }
-
-    public class LiveMeasurementQueryBuilder : GraphQlQueryBuilder<LiveMeasurementQueryBuilder>
-    {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "timestamp" },
-                new FieldMetadata { Name = "power" },
-                new FieldMetadata { Name = "accumulatedConsumption" },
-                new FieldMetadata { Name = "accumulatedCost" },
-                new FieldMetadata { Name = "currency" },
-                new FieldMetadata { Name = "minPower" },
-                new FieldMetadata { Name = "averagePower" },
-                new FieldMetadata { Name = "maxPower" }
-            };
-
-        public LiveMeasurementQueryBuilder WithTimestamp() => WithScalarField("timestamp");
-
-        public LiveMeasurementQueryBuilder WithPower() => WithScalarField("power");
-
-        public LiveMeasurementQueryBuilder WithAccumulatedConsumption() => WithScalarField("accumulatedConsumption");
-
-        public LiveMeasurementQueryBuilder WithAccumulatedCost() => WithScalarField("accumulatedCost");
-
-        public LiveMeasurementQueryBuilder WithCurrency() => WithScalarField("currency");
-
-        public LiveMeasurementQueryBuilder WithMinPower() => WithScalarField("minPower");
-
-        public LiveMeasurementQueryBuilder WithAveragePower() => WithScalarField("averagePower");
-
-        public LiveMeasurementQueryBuilder WithMaxPower() => WithScalarField("maxPower");
-    }
     #endregion
 
     #region data classes
@@ -882,7 +847,7 @@ namespace Tibber.Client
 
     public class Home
     {
-        public string Id { get; set; }
+        public Guid? Id { get; set; }
         /// <summary>
         /// The time zone the home resides in
         /// </summary>
@@ -938,7 +903,6 @@ namespace Tibber.Client
 
     public class Address
     {
-        public string Id { get; set; }
         public string Address1 { get; set; }
         public string Address2 { get; set; }
         public string Address3 { get; set; }
@@ -951,7 +915,7 @@ namespace Tibber.Client
 
     public class LegalEntity
     {
-        public string Id { get; set; }
+        public Guid? Id { get; set; }
         /// <summary>
         /// First/Christian name of the entity
         /// </summary>
@@ -1032,7 +996,7 @@ namespace Tibber.Client
 
     public class Subscription
     {
-        public string Id { get; set; }
+        public Guid? Id { get; set; }
         /// <summary>
         /// The owner of the subscription
         /// </summary>

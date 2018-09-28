@@ -97,7 +97,7 @@ namespace Tibber.Client
         }
 
         /// <summary>
-        /// Starts live measurement listener. You have to have active Tibber Pulse device to get any values.
+        /// Starts live measurement listener. You must have active Tibber Pulse device to get any values.
         /// </summary>
         /// <param name="homeId"></param>
         /// <param name="cancellationToken"></param>
