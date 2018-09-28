@@ -13,6 +13,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace Tibber.Client
 {
+    /// <summary>
+    /// GraphQL client towards Tibber API
+    /// </summary>
     public class TibberApiClient : IDisposable
     {
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
@@ -62,18 +65,43 @@ namespace Tibber.Client
             _httpClient.Dispose();
         }
 
+        /// <summary>
+        /// Gets base data about customer, his/her homes and subscriptions.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default) =>
             Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
 
+        /// <summary>
+        /// Gets home consumption.
+        /// </summary>
+        /// <param name="homeId"></param>
+        /// <param name="resolution"></param>
+        /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>consumption entries</returns>
         public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, ConsumptionResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default) =>
             (await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken)).Data?.Viewer?.Home?.Consumption?.Nodes;
 
+        /// <summary>
+        /// Executes raw GraphQL query.
+        /// </summary>
+        /// <param name="query">query text</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default)
         {
             using (var response = await _httpClient.PostAsync($"gql?token={_accessToken}", JsonContent(new { query }), cancellationToken))
                 return await JsonResult(response);
         }
 
+        /// <summary>
+        /// Starts live measurement listener. You have to have active Tibber Pulse device to get any values.
+        /// </summary>
+        /// <param name="homeId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
         public async Task<IObservable<LiveMeasurement>> StartLiveMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
         {
             await Semaphore.WaitAsync(cancellationToken);
@@ -91,6 +119,10 @@ namespace Tibber.Client
             return liveMeasurementReader;
         }
 
+        /// <summary>
+        /// Stops live measurement listener.
+        /// </summary>
+        /// <param name="homeId"></param>
         public void StopLiveMeasurementListener(Guid homeId)
         {
             Semaphore.Wait();

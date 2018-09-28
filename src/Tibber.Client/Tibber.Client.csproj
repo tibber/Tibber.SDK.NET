@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyTitle>Tibber API C# Client</AssemblyTitle>
-    <Description></Description>
+    <Description>Tibber C# SDK</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
     <VersionPrefix>0.1</VersionPrefix>
@@ -21,7 +21,7 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.*" />
     <PackageReference Include="System.Net.Http" Version="4.*" />

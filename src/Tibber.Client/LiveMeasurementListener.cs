@@ -158,13 +158,37 @@ namespace Tibber.Client
 
     public class LiveMeasurement
     {
+        /// <summary>
+        /// When usage occured
+        /// </summary>
         public DateTimeOffset Timestamp { get; set; }
-        public int Power { get; set; }
+        /// <summary>
+        /// Wattage consumed
+        /// </summary>
+        public decimal Power { get; set; }
+        /// <summary>
+        /// kWh consumed since midnight
+        /// </summary>
         public decimal AccumulatedConsumption { get; set; }
+        /// <summary>
+        /// Accumulated cost since midnight
+        /// </summary>
         public decimal? AccumulatedCost { get; set; }
+        /// <summary>
+        /// Currency of displayed cost
+        /// </summary>
         public string Currency { get; set; }
-        public int MinPower { get; set; }
-        public int AveragePower { get; set; }
-        public int MaxPower { get; set; }
+        /// <summary>
+        /// Min power since midnight
+        /// </summary>
+        public decimal MinPower { get; set; }
+        /// <summary>
+        /// Average power since midnight
+        /// </summary>
+        public decimal AveragePower { get; set; }
+        /// <summary>
+        /// Max power since midnight
+        /// </summary>
+        public decimal MaxPower { get; set; }
     }
 }

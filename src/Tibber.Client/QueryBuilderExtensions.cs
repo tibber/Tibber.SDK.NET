@@ -4,6 +4,11 @@ namespace Tibber.Client
 {
     public static class QueryBuilderExtensions
     {
+        /// <summary>
+        /// Builds a query for customer, homes and their active subscription data. 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
         public static TibberQueryBuilder WithHomesAndSubscriptions(this TibberQueryBuilder builder) =>
             builder.WithAllScalarFields()
                 .WithViewer(
@@ -26,6 +31,14 @@ namespace Tibber.Client
                         )
                 );
 
+        /// <summary>
+        /// Builds a query for home consumption. 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="homeId"></param>
+        /// <param name="resolution"></param>
+        /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
+        /// <returns></returns>
         public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, ConsumptionResolution resolution, int? lastEntries) =>
             builder.WithAllScalarFields()
                 .WithViewer(
