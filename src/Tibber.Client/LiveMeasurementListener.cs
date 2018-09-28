@@ -131,6 +131,7 @@ namespace Tibber.Client
                     // disposing not suppose to throw
                 }
 
+            _liveMeasurementObservers.Clear();
             _cancellationTokenSource.Dispose();
             _wssClient.Dispose();
         }
