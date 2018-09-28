@@ -13,6 +13,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Tibber.Client
 {
+    /// <inheritdoc />
     /// <summary>
     /// GraphQL client towards Tibber API
     /// </summary>
@@ -50,7 +51,8 @@ namespace Tibber.Client
                     Timeout = timeout ?? DefaultTimeout,
                     DefaultRequestHeaders =
                     {
-                        AcceptEncoding = { new StringWithQualityHeaderValue("gzip") }
+                        AcceptEncoding = { new StringWithQualityHeaderValue("gzip") },
+                        UserAgent = { new ProductInfoHeaderValue("TibberSDK", "1.0") }
                     }
                 };
         }
