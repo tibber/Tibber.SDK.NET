@@ -119,7 +119,7 @@ namespace Tibber.Client
                     return ConvertEnumToString(@enum);
 
                 var argumentValue = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return value is String ? $"\"{argumentValue}\"" : argumentValue;
+                return value is String || value is Guid ? $"\"{argumentValue}\"" : argumentValue;
             }
 
             private static string ConvertEnumToString(Enum @enum)
@@ -302,7 +302,7 @@ namespace Tibber.Client
 
         public ViewerQueryBuilder WithHomes(HomeQueryBuilder homeQueryBuilder) => WithObjectField("homes", homeQueryBuilder);
 
-        public ViewerQueryBuilder WithHome(HomeQueryBuilder homeQueryBuilder, string id)
+        public ViewerQueryBuilder WithHome(HomeQueryBuilder homeQueryBuilder, Guid id)
         {
             var args = new Dictionary<string, object> { { "id", id } };
             return WithObjectField("home", homeQueryBuilder, args);

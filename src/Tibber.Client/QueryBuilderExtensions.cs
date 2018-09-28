@@ -32,7 +32,7 @@ namespace Tibber.Client
                 );
 
         /// <summary>
-        /// Builds a query for home consumption. 
+        /// Builds a query for home consumption.
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="homeId"></param>
@@ -51,7 +51,7 @@ namespace Tibber.Client
                                             new ConsumptionQueryBuilder().WithAllFields()),
                                             resolution,
                                             last: lastEntries ?? LastConsumptionEntries(resolution)),
-                            homeId.ToString())
+                            homeId)
                 );
 
         private static int LastConsumptionEntries(ConsumptionResolution resolution)

@@ -17,8 +17,8 @@ Usage
 var client = new TibberApiClient(accessToken);
 
 var basicData = await client.GetBasicData();
-
-var consumption = await client.GetHomeConsumption(basicData.Data.Viewer.Homes.First().Id.Value, ConsumptionResolution.Monthly);
+var homeId = basicData.Data.Viewer.Homes.First().Id.Value;
+var consumption = await client.GetHomeConsumption(homeId, ConsumptionResolution.Monthly);
 
 var customQueryBuilder =
     new TibberQueryBuilder()
@@ -27,7 +27,7 @@ var customQueryBuilder =
             new ViewerQueryBuilder()
                 .WithAllScalarFields()
                 .WithAccountType()
-                .WithHomes(
+                .WithHome(
                     new HomeQueryBuilder()
                         .WithAllScalarFields()
                         .WithAddress(new AddressQueryBuilder().WithAllFields())
@@ -39,7 +39,8 @@ var customQueryBuilder =
                         )
                         .WithOwner(new LegalEntityQueryBuilder().WithAllFields())
                         .WithFeatures(new HomeFeaturesQueryBuilder().WithAllFields())
-                        .WithMeteringPointData(new MeteringPointDataQueryBuilder().WithAllFields())
+                        .WithMeteringPointData(new MeteringPointDataQueryBuilder().WithAllFields()),
+                    homeId
                 )
         );
 
