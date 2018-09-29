@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tibber.Client
+namespace Tibber.Sdk
 {
     public static class QueryBuilderExtensions
     {

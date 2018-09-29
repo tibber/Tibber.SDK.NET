@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Tibber.Client
+namespace Tibber.Sdk
 {
     #region base classes
     public class FieldMetadata

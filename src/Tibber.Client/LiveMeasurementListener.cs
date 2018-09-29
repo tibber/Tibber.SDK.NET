@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Tibber.Client
+namespace Tibber.Sdk
 {
     internal class LiveMeasurementListener : IObservable<LiveMeasurement>, IDisposable
     {
@@ -18,7 +18,9 @@ namespace Tibber.Client
         private readonly string _accessToken;
         private readonly Guid _homeId;
 
-        private ClientWebSocket _wssClient;
+        private readonly ClientWebSocket _wssClient = new ClientWebSocket();
+
+        private bool _isInitialized;
 
         public LiveMeasurementListener(string accessToken, Guid homeId)
         {
@@ -28,10 +30,6 @@ namespace Tibber.Client
 
         public async Task Initialize(CancellationToken cancellationToken)
         {
-            _wssClient?.Dispose();
-
-            _wssClient = new ClientWebSocket();
-
             var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""init"",""payload"":""token={_accessToken}""}}"));
             var subscriptionRequest =
                 new ArraySegment<byte>(
@@ -54,6 +52,8 @@ namespace Tibber.Client
             if (!String.Equals(message.Type, "subscription_success"))
                 throw new InvalidOperationException($"web socket initialization failed: {message.Payload?.Error ?? data}");
 
+            _isInitialized = true;
+
             StartListening();
         }
 
@@ -70,8 +70,8 @@ namespace Tibber.Client
 
         private async void StartListening()
         {
-            if (_wssClient == null)
-                throw new InvalidOperationException("Initialize the reader first. ");
+            if (!_isInitialized)
+                throw new InvalidOperationException("Initialize the listener first. ");
 
             do
             {
@@ -121,7 +121,15 @@ namespace Tibber.Client
 
         public void Dispose()
         {
-            foreach (var observer in _liveMeasurementObservers)
+            ICollection<IObserver<LiveMeasurement>> observers;
+
+            lock (_liveMeasurementObservers)
+            {
+                observers = _liveMeasurementObservers.ToArray();
+                _liveMeasurementObservers.Clear();
+            }
+
+            foreach (var observer in observers)
                 try
                 {
                     observer.OnCompleted();
@@ -131,7 +139,6 @@ namespace Tibber.Client
                     // disposing not suppose to throw
                 }
 
-            _liveMeasurementObservers.Clear();
             _cancellationTokenSource.Dispose();
             _wssClient.Dispose();
         }
