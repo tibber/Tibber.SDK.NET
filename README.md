@@ -11,6 +11,10 @@ Using nuget package manager:
 Install-Package Tibber.Sdk
 ```
 
+Authorization
+-------------
+You must have Tibber account at access our API. Access token can be generated at https://developer.tibber.com.
+
 Usage
 -------------
 ```
