@@ -1,4 +1,4 @@
-Tibber C# SDK
+Tibber SDK.NET
 =======================
 
 Package for accessing Tibber API.
@@ -8,11 +8,15 @@ Installation
 -------------
 Using nuget package manager:
 ```
-Install-Package Tibber.SDK
+Install-Package Tibber.Sdk
 ```
 
 Usage
 -------------
+```
+using Tibber.Sdk;
+```
+
 ```
 var client = new TibberApiClient(accessToken);
 
@@ -56,10 +60,10 @@ Sample observer implementation:
 ```
 public class LiveMeasurementObserver : IObserver<LiveMeasurement>
 {
-  public void OnCompleted() => Console.WriteLine("Live measurement stream has been terminated. ");
-  public void OnError(Exception error) => Console.WriteLine($"An error occured: {error}");
-  public void OnNext(LiveMeasurement value) =>
-    Console.WriteLine($"{value.Timestamp} - power: {value.Power:N0} W (average: {value.AveragePower:N0} W); consumption since last midnight: {value.AccumulatedConsumption:N3} kWh; cost since last midnight: {value.AccumulatedCost:N2} {value.Currency}");
+    public void OnCompleted() => Console.WriteLine("Live measurement stream has been terminated. ");
+    public void OnError(Exception error) => Console.WriteLine($"An error occured: {error}");
+    public void OnNext(LiveMeasurement value) =>
+        Console.WriteLine($"{value.Timestamp} - power: {value.Power:N0} W (average: {value.AveragePower:N0} W); consumption since last midnight: {value.AccumulatedConsumption:N3} kWh; cost since last midnight: {value.AccumulatedCost:N2} {value.Currency}");
 }
 ```
 
