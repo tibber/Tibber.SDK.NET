@@ -40,19 +40,26 @@ namespace Tibber.Sdk
         /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
         /// <returns></returns>
         public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, ConsumptionResolution resolution, int? lastEntries) =>
-            builder.WithAllScalarFields()
-                .WithViewer(
+            builder.WithViewer(
                     new ViewerQueryBuilder()
                         .WithHome(
-                            new HomeQueryBuilder()
-                                .WithConsumption(
-                                    new HomeConsumptionConnectionQueryBuilder()
-                                        .WithNodes(
-                                            new ConsumptionQueryBuilder().WithAllFields()),
-                                            resolution,
-                                            last: lastEntries ?? LastConsumptionEntries(resolution)),
-                            homeId)
+                            new HomeQueryBuilder().WithConsumption(resolution, lastEntries ?? LastConsumptionEntries(resolution)),
+                            homeId
+                        )
                 );
+
+        /// <summary>
+        /// Builds a query for home consumption.
+        /// </summary>
+        /// <param name="homeQueryBuilder"></param>
+        /// <param name="resolution"></param>
+        /// <param name="lastEntries">how many last entries to fetch</param>
+        /// <returns></returns>
+        public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, ConsumptionResolution resolution, int lastEntries) =>
+            homeQueryBuilder.WithConsumption(
+                new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionQueryBuilder().WithAllFields()),
+                resolution,
+                last: lastEntries);
 
         private static int LastConsumptionEntries(ConsumptionResolution resolution)
         {

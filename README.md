@@ -56,6 +56,51 @@ var customQuery = customQueryBuilder.Build(); // produces plain GraphQL query te
 var result = await client.Query(customQuery);
 ```
 
+Extension methods
+-------------
+It's good practice to define custom queries as extension methods, either of root `TibberQueryBuilder` or any child subquery builder. It helps to reduce code redundancy.
+Example:
+```
+public static class QueryBuilderExtensions
+{
+    /// <summary>
+    /// Builds a query for home consumption.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="homeId"></param>
+    /// <param name="resolution"></param>
+    /// <param name="lastEntries">how many last entries to fetch</param>
+    /// <returns></returns>
+    public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, ConsumptionResolution resolution, int lastEntries) =>
+        builder.WithAllScalarFields()
+            .WithViewer(
+                new ViewerQueryBuilder()
+                    .WithHome(
+                        new HomeQueryBuilder().WithConsumption(resolution, lastEntries),
+                        homeId
+                    )
+            );
+
+    /// <summary>
+    /// Builds a query for home consumption.
+    /// </summary>
+    /// <param name="homeQueryBuilder"></param>
+    /// <param name="resolution"></param>
+    /// <param name="lastEntries">how many last entries to fetch</param>
+    /// <returns></returns>
+    public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, ConsumptionResolution resolution, int lastEntries) =>
+        homeQueryBuilder.WithConsumption(
+            new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionQueryBuilder().WithAllFields()),
+            resolution,
+            last: lastEntries);
+}
+```
+Usage:
+```
+var query = new TibberQueryBuilder().WithHomeConsumption(homeId, ConsumptionResolution.Monthly, 12).Build();
+await client.Query(query);
+```
+
 Real-time measurement usage
 -------------
 You must have active Tibber Pulse device at your home to access real-time measurements. `basicData.Data.Viewer.Home.Features.RealTimeConsumptionEnabled` must return `true`.
