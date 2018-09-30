@@ -13,7 +13,7 @@ Install-Package Tibber.Sdk
 
 Authorization
 -------------
-You must have Tibber account at access our API. Access token can be generated at https://developer.tibber.com.
+You must have a Tibber account to access our API. Access token can be generated at https://developer.tibber.com.
 
 Usage
 -------------
