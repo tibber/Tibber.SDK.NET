@@ -779,11 +779,23 @@ namespace Tibber.Sdk
                 new FieldMetadata { Name = "sendPushNotification", IsComplex = true, QueryBuilderType = typeof(PushNotificationResponseQueryBuilder) }
             };
 
-        public RootMutationQueryBuilder WithSendMeterReading(MeterReadingResponseQueryBuilder meterReadingResponseQueryBuilder) => WithObjectField("sendMeterReading", meterReadingResponseQueryBuilder);
+        public RootMutationQueryBuilder WithSendMeterReading(MeterReadingResponseQueryBuilder meterReadingResponseQueryBuilder, MeterReadingInput input)
+        {
+            var args = new Dictionary<string, object> { { "input", input } };
+            return WithObjectField("sendMeterReading", meterReadingResponseQueryBuilder, args);
+        }
 
-        public RootMutationQueryBuilder WithUpdateHome(HomeQueryBuilder homeQueryBuilder) => WithObjectField("updateHome", homeQueryBuilder);
+        public RootMutationQueryBuilder WithUpdateHome(HomeQueryBuilder homeQueryBuilder, UpdateHomeInput input)
+        {
+            var args = new Dictionary<string, object> { { "input", input } };
+            return WithObjectField("updateHome", homeQueryBuilder, args);
+        }
 
-        public RootMutationQueryBuilder WithSendPushNotification(PushNotificationResponseQueryBuilder pushNotificationResponseQueryBuilder) => WithObjectField("sendPushNotification", pushNotificationResponseQueryBuilder);
+        public RootMutationQueryBuilder WithSendPushNotification(PushNotificationResponseQueryBuilder pushNotificationResponseQueryBuilder, PushNotificationInput input)
+        {
+            var args = new Dictionary<string, object> { { "input", input } };
+            return WithObjectField("sendPushNotification", pushNotificationResponseQueryBuilder, args);
+        }
     }
 
     public class MeterReadingResponseQueryBuilder : GraphQlQueryBuilder<MeterReadingResponseQueryBuilder>
@@ -1199,7 +1211,7 @@ namespace Tibber.Sdk
 
     public class MeterReadingResponse
     {
-        public string HomeId { get; set; }
+        public Guid? HomeId { get; set; }
         public string Time { get; set; }
         public int? Reading { get; set; }
     }
@@ -1208,6 +1220,52 @@ namespace Tibber.Sdk
     {
         public bool? Successful { get; set; }
         public int? PushedToNumberOfDevices { get; set; }
+    }
+    #endregion
+
+    #region input classes
+    public class MeterReadingInput
+    {
+        public Guid? HomeId { get; set; }
+        public string Time { get; set; }
+        public int? Reading { get; set; }
+    }
+
+    public class UpdateHomeInput
+    {
+        public Guid? HomeId { get; set; }
+        public string AppNickname { get; set; }
+        /// <summary>
+        /// The chosen avatar for the home
+        /// </summary>
+        public HomeAvatar? AppAvatar { get; set; }
+        /// <summary>
+        /// The size of the home in square meters
+        /// </summary>
+        public int? Size { get; set; }
+        /// <summary>
+        /// The type of home.
+        /// </summary>
+        public HomeType? Type { get; set; }
+        /// <summary>
+        /// The number of people living in the home
+        /// </summary>
+        public int? NumberOfResidents { get; set; }
+        /// <summary>
+        /// The primary form of heating in the household
+        /// </summary>
+        public HeatingSource? PrimaryHeatingSource { get; set; }
+        /// <summary>
+        /// Whether the home has a ventilation system
+        /// </summary>
+        public bool? HasVentilationSystem { get; set; }
+    }
+
+    public class PushNotificationInput
+    {
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public AppScreen? ScreenToOpen { get; set; }
     }
     #endregion
 }
