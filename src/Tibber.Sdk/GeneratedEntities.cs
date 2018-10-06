@@ -25,6 +25,82 @@ namespace Tibber.Sdk
     internal static class GraphQlQueryHelper
     {
         public static string GetIndentation(int level, byte indentationSize) => new String(' ', level * indentationSize);
+
+        public static string BuildArgumentValue(object value, Formatting formatting, int level, byte indentationSize)
+        {
+            if (value is Enum @enum)
+                return ConvertEnumToString(@enum);
+
+            if (value is GraphQlMutationInput mutationInput)
+                return mutationInput.Build(formatting, level + 2, indentationSize);
+
+            var argumentValue = Convert.ToString(value, CultureInfo.InvariantCulture);
+            return value is String || value is Guid ? $"\"{argumentValue}\"" : argumentValue;
+        }
+
+        private static string ConvertEnumToString(Enum @enum)
+        {
+            var enumMember =
+                @enum.GetType()
+                    .GetTypeInfo()
+                    .GetMembers()
+                    .Single(m => String.Equals(m.Name, @enum.ToString()));
+
+            var enumMemberAttribute = (EnumMemberAttribute)enumMember.GetCustomAttribute(typeof(EnumMemberAttribute));
+
+            return enumMemberAttribute == null
+                ? @enum.ToString()
+                : enumMemberAttribute.Value;
+        }
+    }
+
+    public struct InputPropertyInfo
+    {
+        public string Name { get; set; }
+        public object Value { get; set; }
+    }
+
+    public abstract class GraphQlMutationInput
+    {
+        internal string Build(Formatting formatting, int level, byte indentationSize)
+        {
+            var builder = new StringBuilder();
+            builder.Append("{");
+
+            var isIndentedFormatting = formatting == Formatting.Indented;
+            string valueSeparator;
+            if (isIndentedFormatting)
+            {
+                builder.AppendLine();
+                valueSeparator = ": ";
+            }
+            else
+                valueSeparator = ":";
+
+            var separator = String.Empty;
+            foreach (var propertyValue in GetPropertyValues().Where(p => p.Value != null))
+            {
+                var value = GraphQlQueryHelper.BuildArgumentValue(propertyValue.Value, formatting, level, indentationSize);
+                builder.Append(isIndentedFormatting ? GraphQlQueryHelper.GetIndentation(level, indentationSize) : separator);
+                builder.Append(propertyValue.Name);
+                builder.Append(valueSeparator);
+                builder.Append(value);
+
+                separator = ",";
+
+                if (isIndentedFormatting)
+                    builder.AppendLine();
+            }
+
+            if (isIndentedFormatting)
+                builder.Append(GraphQlQueryHelper.GetIndentation(level - 1, indentationSize));
+
+            builder.Append("}");
+
+            return builder.ToString();
+        }
+
+        protected abstract IEnumerable<InputPropertyInfo> GetPropertyValues();
     }
 
     public abstract class GraphQlQueryBuilder
@@ -46,14 +122,15 @@ namespace Tibber.Sdk
             var builder = new StringBuilder();
             builder.Append("{");
 
-            if (formatting == Formatting.Indented)
+            var isIndentedFormatting = formatting == Formatting.Indented;
+            if (isIndentedFormatting)
                 builder.AppendLine();
 
             var separator = String.Empty;
             foreach (var criteria in _fieldCriteria.Values)
             {
                 var fieldCriteria = criteria.Build(formatting, level, indentationSize);
-                if (formatting == Formatting.Indented)
+                if (isIndentedFormatting)
                     builder.AppendLine(fieldCriteria);
                 else if (!String.IsNullOrEmpty(fieldCriteria))
                 {
@@ -64,7 +141,7 @@ namespace Tibber.Sdk
                 separator = ",";
             }
 
-            if (formatting == Formatting.Indented)
+            if (isIndentedFormatting)
                 builder.Append(GraphQlQueryHelper.GetIndentation(level - 1, indentationSize));
 
             builder.Append("}");
@@ -105,37 +182,13 @@ namespace Tibber.Sdk
 
             public abstract string Build(Formatting formatting, int level, byte indentationSize);
 
-            protected string BuildArgumentClause(Formatting formatting)
+            protected string BuildArgumentClause(Formatting formatting, int level, byte indentationSize)
             {
                 var separator = formatting == Formatting.Indented ? " " : null;
                 return
                     _args?.Count > 0
-                        ? $"({String.Join($",{separator}", _args.Select(kvp => $"{kvp.Key}:{separator}{BuildArgumentValue(kvp.Value)}"))}){separator}"
+                        ? $"({String.Join($",{separator}", _args.Select(kvp => $"{kvp.Key}:{separator}{GraphQlQueryHelper.BuildArgumentValue(kvp.Value, formatting, level, indentationSize)}"))}){separator}"
                         : String.Empty;
-            }
-
-            private static string BuildArgumentValue(object value)
-            {
-                if (value is Enum @enum)
-                    return ConvertEnumToString(@enum);
-
-                var argumentValue = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return value is String || value is Guid ? $"\"{argumentValue}\"" : argumentValue;
-            }
-
-            private static string ConvertEnumToString(Enum @enum)
-            {
-                var enumMember =
-                    @enum.GetType()
-                        .GetTypeInfo()
-                        .GetMembers()
-                        .Single(m => String.Equals(m.Name, @enum.ToString()));
-
-                var enumMemberAttribute = (EnumMemberAttribute)enumMember.GetCustomAttribute(typeof(EnumMemberAttribute));
-
-                return enumMemberAttribute == null
-                    ? @enum.ToString()
-                    : enumMemberAttribute.Value;
             }
         }
 
@@ -152,7 +205,7 @@ namespace Tibber.Sdk
                     builder.Append(GraphQlQueryHelper.GetIndentation(level, indentationSize));
 
                 builder.Append(FieldName);
-                builder.Append(BuildArgumentClause(formatting));
+                builder.Append(BuildArgumentClause(formatting, level, indentationSize));
                 return builder.ToString();
             }
         }
@@ -177,7 +230,7 @@ namespace Tibber.Sdk
                     fieldName = $"{GraphQlQueryHelper.GetIndentation(level, indentationSize)}{FieldName} ";
 
                 builder.Append(fieldName);
-                builder.Append(BuildArgumentClause(formatting));
+                builder.Append(BuildArgumentClause(formatting, level, indentationSize));
                 builder.Append(_objectQueryBuilder.Build(formatting, level + 1, indentationSize));
                 return builder.ToString();
             }
@@ -1225,14 +1278,21 @@ namespace Tibber.Sdk
     #endregion
 
     #region input classes
-    public class MeterReadingInput
+    public class MeterReadingInput : GraphQlMutationInput
     {
         public Guid? HomeId { get; set; }
         public string Time { get; set; }
         public int? Reading { get; set; }
+
+        protected override IEnumerable<InputPropertyInfo> GetPropertyValues()
+        {
+            yield return new InputPropertyInfo { Name = "homeId", Value = HomeId };
+            yield return new InputPropertyInfo { Name = "time", Value = Time };
+            yield return new InputPropertyInfo { Name = "reading", Value = Reading };
+        }
     }
 
-    public class UpdateHomeInput
+    public class UpdateHomeInput : GraphQlMutationInput
     {
         public Guid? HomeId { get; set; }
         public string AppNickname { get; set; }
@@ -1260,13 +1320,32 @@ namespace Tibber.Sdk
         /// Whether the home has a ventilation system
         /// </summary>
         public bool? HasVentilationSystem { get; set; }
+
+        protected override IEnumerable<InputPropertyInfo> GetPropertyValues()
+        {
+            yield return new InputPropertyInfo { Name = "homeId", Value = HomeId };
+            yield return new InputPropertyInfo { Name = "appNickname", Value = AppNickname };
+            yield return new InputPropertyInfo { Name = "appAvatar", Value = AppAvatar };
+            yield return new InputPropertyInfo { Name = "size", Value = Size };
+            yield return new InputPropertyInfo { Name = "type", Value = Type };
+            yield return new InputPropertyInfo { Name = "numberOfResidents", Value = NumberOfResidents };
+            yield return new InputPropertyInfo { Name = "primaryHeatingSource", Value = PrimaryHeatingSource };
+            yield return new InputPropertyInfo { Name = "hasVentilationSystem", Value = HasVentilationSystem };
+        }
     }
 
-    public class PushNotificationInput
+    public class PushNotificationInput : GraphQlMutationInput
     {
         public string Title { get; set; }
         public string Message { get; set; }
         public AppScreen? ScreenToOpen { get; set; }
+
+        protected override IEnumerable<InputPropertyInfo> GetPropertyValues()
+        {
+            yield return new InputPropertyInfo { Name = "title", Value = Title };
+            yield return new InputPropertyInfo { Name = "message", Value = Message };
+            yield return new InputPropertyInfo { Name = "screenToOpen", Value = ScreenToOpen };
+        }
     }
     #endregion
 }
