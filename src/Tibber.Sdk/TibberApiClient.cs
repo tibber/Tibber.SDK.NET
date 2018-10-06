@@ -101,23 +101,17 @@ namespace Tibber.Sdk
         /// <param name="query">query text</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default)
-        {
-            var relativeUri = $"gql?token={_accessToken}";
+        public Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default) =>
+            Request(new { query }, cancellationToken);
 
-            var requestStart = DateTimeOffset.UtcNow;
-
-            using (var response = await _httpClient.PostAsync(relativeUri, JsonContent(new { query }), cancellationToken))
-            {
-                if (!response.IsSuccessStatusCode)
-                    throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
-
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var streamReader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(streamReader))
-                    return Serializer.Deserialize<TibberApiQueryResult>(jsonReader);
-            }
-        }
+        /// <summary>
+        /// Executes raw GraphQL mutation.
+        /// </summary>
+        /// <param name="mutation">mutation text</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<TibberApiQueryResult> Mutation(string mutation, CancellationToken cancellationToken = default) =>
+            Request(new { mutation }, cancellationToken);
 
         /// <summary>
         /// Starts live measurement listener. You must have active Tibber Pulse device to get any values.
@@ -164,6 +158,24 @@ namespace Tibber.Sdk
             }
 
             Semaphore.Release();
+        }
+
+        private async Task<TibberApiQueryResult> Request(object content, CancellationToken cancellationToken)
+        {
+            var relativeUri = $"gql?token={_accessToken}";
+
+            var requestStart = DateTimeOffset.UtcNow;
+
+            using (var response = await _httpClient.PostAsync(relativeUri, JsonContent(content), cancellationToken))
+            {
+                if (!response.IsSuccessStatusCode)
+                    throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var streamReader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                    return Serializer.Deserialize<TibberApiQueryResult>(jsonReader);
+            }
         }
 
         private static HttpContent JsonContent(object data) =>

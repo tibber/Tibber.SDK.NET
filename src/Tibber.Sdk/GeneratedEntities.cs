@@ -22,10 +22,13 @@ namespace Tibber.Sdk
         Indented
     }
 
+    internal static class GraphQlQueryHelper
+    {
+        public static string GetIndentation(int level, byte indentationSize) => new String(' ', level * indentationSize);
+    }
+
     public abstract class GraphQlQueryBuilder
     {
-        private const int IndentationSize = 2;
-
         private static readonly IList<FieldMetadata> EmptyFieldCollection = new List<FieldMetadata>();
 
         private readonly Dictionary<string, GraphQlFieldCriteria> _fieldCriteria = new Dictionary<string, GraphQlFieldCriteria>();
@@ -36,9 +39,9 @@ namespace Tibber.Sdk
 
         public void IncludeAllFields() => IncludeFields(AllFields);
 
-        public string Build(Formatting formatting = Formatting.None) => Build(formatting, 1);
+        public string Build(Formatting formatting = Formatting.None, byte indentationSize = 2) => Build(formatting, 1, indentationSize);
 
-        protected string Build(Formatting formatting, int level)
+        protected string Build(Formatting formatting, int level, byte indentationSize)
         {
             var builder = new StringBuilder();
             builder.Append("{");
@@ -49,7 +52,7 @@ namespace Tibber.Sdk
             var separator = String.Empty;
             foreach (var criteria in _fieldCriteria.Values)
             {
-                var fieldCriteria = criteria.Build(formatting, level);
+                var fieldCriteria = criteria.Build(formatting, level, indentationSize);
                 if (formatting == Formatting.Indented)
                     builder.AppendLine(fieldCriteria);
                 else if (!String.IsNullOrEmpty(fieldCriteria))
@@ -62,7 +65,7 @@ namespace Tibber.Sdk
             }
 
             if (formatting == Formatting.Indented)
-                builder.Append(GetIndentation(level - 1));
+                builder.Append(GraphQlQueryHelper.GetIndentation(level - 1, indentationSize));
 
             builder.Append("}");
             return builder.ToString();
@@ -89,8 +92,6 @@ namespace Tibber.Sdk
             }
         }
 
-        private static string GetIndentation(int level) => new String(' ', level * IndentationSize);
-
         private abstract class GraphQlFieldCriteria
         {
             protected readonly string FieldName;
@@ -102,7 +103,7 @@ namespace Tibber.Sdk
                 _args = args;
             }
 
-            public abstract string Build(Formatting formatting, int level);
+            public abstract string Build(Formatting formatting, int level, byte indentationSize);
 
             protected string BuildArgumentClause(Formatting formatting)
             {
@@ -144,11 +145,11 @@ namespace Tibber.Sdk
             {
             }
 
-            public override string Build(Formatting formatting, int level)
+            public override string Build(Formatting formatting, int level, byte indentationSize)
             {
                 var builder = new StringBuilder();
                 if (formatting == Formatting.Indented)
-                    builder.Append(GetIndentation(level));
+                    builder.Append(GraphQlQueryHelper.GetIndentation(level, indentationSize));
 
                 builder.Append(FieldName);
                 builder.Append(BuildArgumentClause(formatting));
@@ -165,7 +166,7 @@ namespace Tibber.Sdk
                 _objectQueryBuilder = objectQueryBuilder;
             }
 
-            public override string Build(Formatting formatting, int level)
+            public override string Build(Formatting formatting, int level, byte indentationSize)
             {
                 if (_objectQueryBuilder._fieldCriteria.Count == 0)
                     return String.Empty;
@@ -173,11 +174,11 @@ namespace Tibber.Sdk
                 var builder = new StringBuilder();
                 var fieldName = FieldName;
                 if (formatting == Formatting.Indented)
-                    fieldName = $"{GetIndentation(level)}{FieldName} ";
+                    fieldName = $"{GraphQlQueryHelper.GetIndentation(level, indentationSize)}{FieldName} ";
 
                 builder.Append(fieldName);
                 builder.Append(BuildArgumentClause(formatting));
-                builder.Append(_objectQueryBuilder.Build(formatting, level + 1));
+                builder.Append(_objectQueryBuilder.Build(formatting, level + 1, indentationSize));
                 return builder.ToString();
             }
         }
