@@ -109,7 +109,7 @@ namespace Tibber.Sdk
 
         protected virtual string Prefix => null;
 
-        protected virtual IList<FieldMetadata> AllFields => Array.Empty<FieldMetadata>();
+        protected abstract IList<FieldMetadata> AllFields { get; }
 
         public void Clear() => _fieldCriteria.Clear();
 
