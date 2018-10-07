@@ -8,11 +8,11 @@
     <VersionPrefix>0.1</VersionPrefix>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright 2018</Copyright>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/tibbercom/Tibber.ApiClient/master/License.md</PackageLicenseUrl>
+    <Copyright>Copyright 2017</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/tibbercom/Tibber.SDK.NET/master/License.md</PackageLicenseUrl>
     <PackageProjectUrl>https://developer.tibber.com/</PackageProjectUrl>
     <PackageIconUrl>https://lh3.googleusercontent.com/EMPZKxEewbjzlAKuj5tbKxH7ah-XxVaEKs667J143Nk2NhzcspAC9ybQFmA8coAg_w=w300</PackageIconUrl>
-    <RepositoryUrl>https://github.com/tibbercom/Tibber.ApiClient</RepositoryUrl>
+    <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>GraphGL C# Client Tibber</PackageTags>
     <PackageReleaseNotes>Initial alpha release</PackageReleaseNotes>
