@@ -105,11 +105,11 @@ namespace Tibber.Sdk
 
     public abstract class GraphQlQueryBuilder
     {
-        private static readonly IList<FieldMetadata> EmptyFieldCollection = new List<FieldMetadata>();
-
         private readonly Dictionary<string, GraphQlFieldCriteria> _fieldCriteria = new Dictionary<string, GraphQlFieldCriteria>();
 
-        protected virtual IList<FieldMetadata> AllFields { get; } = EmptyFieldCollection;
+        protected virtual string Prefix => null;
+
+        protected virtual IList<FieldMetadata> AllFields => Array.Empty<FieldMetadata>();
 
         public void Clear() => _fieldCriteria.Clear();
 
@@ -119,10 +119,20 @@ namespace Tibber.Sdk
 
         protected string Build(Formatting formatting, int level, byte indentationSize)
         {
+            var isIndentedFormatting = formatting == Formatting.Indented;
+
             var builder = new StringBuilder();
+
+            if (!String.IsNullOrEmpty(Prefix))
+            {
+                builder.Append(Prefix);
+
+                if (isIndentedFormatting)
+                    builder.Append(" ");
+            }
+
             builder.Append("{");
 
-            var isIndentedFormatting = formatting == Formatting.Indented;
             if (isIndentedFormatting)
                 builder.AppendLine();
 
@@ -265,7 +275,7 @@ namespace Tibber.Sdk
     }
     #endregion
 
-    #region builder classes
+    #region shared types
     public enum HomeAvatar
     {
         [EnumMember(Value = "APARTMENT")] Apartment,
@@ -325,28 +335,33 @@ namespace Tibber.Sdk
         [EnumMember(Value = "INVOICES")] Invoices
     }
 
+    #endregion
+
+    #region builder classes
     public class TibberQueryBuilder : GraphQlQueryBuilder<TibberQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "viewer", IsComplex = true, QueryBuilderType = typeof(ViewerQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "viewer", IsComplex = true, QueryBuilderType = typeof(ViewerQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public TibberQueryBuilder WithViewer(ViewerQueryBuilder viewerQueryBuilder) => WithObjectField("viewer", viewerQueryBuilder);
     }
 
     public class ViewerQueryBuilder : GraphQlQueryBuilder<ViewerQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "login" },
-                new FieldMetadata { Name = "name" },
-                new FieldMetadata { Name = "accountType", IsComplex = true },
-                new FieldMetadata { Name = "homes", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) },
-                new FieldMetadata { Name = "home", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "login" },
+            new FieldMetadata { Name = "name" },
+            new FieldMetadata { Name = "accountType", IsComplex = true },
+            new FieldMetadata { Name = "homes", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) },
+            new FieldMetadata { Name = "home", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public ViewerQueryBuilder WithLogin() => WithScalarField("login");
 
@@ -365,26 +380,27 @@ namespace Tibber.Sdk
 
     public class HomeQueryBuilder : GraphQlQueryBuilder<HomeQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "id" },
-                new FieldMetadata { Name = "timeZone" },
-                new FieldMetadata { Name = "appNickname" },
-                new FieldMetadata { Name = "appAvatar" },
-                new FieldMetadata { Name = "size" },
-                new FieldMetadata { Name = "type" },
-                new FieldMetadata { Name = "numberOfResidents" },
-                new FieldMetadata { Name = "primaryHeatingSource" },
-                new FieldMetadata { Name = "hasVentilationSystem" },
-                new FieldMetadata { Name = "address", IsComplex = true, QueryBuilderType = typeof(AddressQueryBuilder) },
-                new FieldMetadata { Name = "owner", IsComplex = true, QueryBuilderType = typeof(LegalEntityQueryBuilder) },
-                new FieldMetadata { Name = "meteringPointData", IsComplex = true, QueryBuilderType = typeof(MeteringPointDataQueryBuilder) },
-                new FieldMetadata { Name = "currentSubscription", IsComplex = true, QueryBuilderType = typeof(SubscriptionQueryBuilder) },
-                new FieldMetadata { Name = "subscriptions", IsComplex = true, QueryBuilderType = typeof(SubscriptionQueryBuilder) },
-                new FieldMetadata { Name = "consumption", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionConnectionQueryBuilder) },
-                new FieldMetadata { Name = "features", IsComplex = true, QueryBuilderType = typeof(HomeFeaturesQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "id" },
+            new FieldMetadata { Name = "timeZone" },
+            new FieldMetadata { Name = "appNickname" },
+            new FieldMetadata { Name = "appAvatar" },
+            new FieldMetadata { Name = "size" },
+            new FieldMetadata { Name = "type" },
+            new FieldMetadata { Name = "numberOfResidents" },
+            new FieldMetadata { Name = "primaryHeatingSource" },
+            new FieldMetadata { Name = "hasVentilationSystem" },
+            new FieldMetadata { Name = "address", IsComplex = true, QueryBuilderType = typeof(AddressQueryBuilder) },
+            new FieldMetadata { Name = "owner", IsComplex = true, QueryBuilderType = typeof(LegalEntityQueryBuilder) },
+            new FieldMetadata { Name = "meteringPointData", IsComplex = true, QueryBuilderType = typeof(MeteringPointDataQueryBuilder) },
+            new FieldMetadata { Name = "currentSubscription", IsComplex = true, QueryBuilderType = typeof(SubscriptionQueryBuilder) },
+            new FieldMetadata { Name = "subscriptions", IsComplex = true, QueryBuilderType = typeof(SubscriptionQueryBuilder) },
+            new FieldMetadata { Name = "consumption", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionConnectionQueryBuilder) },
+            new FieldMetadata { Name = "features", IsComplex = true, QueryBuilderType = typeof(HomeFeaturesQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public HomeQueryBuilder WithId() => WithScalarField("id");
 
@@ -440,18 +456,19 @@ namespace Tibber.Sdk
 
     public class AddressQueryBuilder : GraphQlQueryBuilder<AddressQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "address1" },
-                new FieldMetadata { Name = "address2" },
-                new FieldMetadata { Name = "address3" },
-                new FieldMetadata { Name = "city" },
-                new FieldMetadata { Name = "postalCode" },
-                new FieldMetadata { Name = "country" },
-                new FieldMetadata { Name = "latitude" },
-                new FieldMetadata { Name = "longitude" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "address1" },
+            new FieldMetadata { Name = "address2" },
+            new FieldMetadata { Name = "address3" },
+            new FieldMetadata { Name = "city" },
+            new FieldMetadata { Name = "postalCode" },
+            new FieldMetadata { Name = "country" },
+            new FieldMetadata { Name = "latitude" },
+            new FieldMetadata { Name = "longitude" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public AddressQueryBuilder WithAddress1() => WithScalarField("address1");
 
@@ -472,20 +489,21 @@ namespace Tibber.Sdk
 
     public class LegalEntityQueryBuilder : GraphQlQueryBuilder<LegalEntityQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "id" },
-                new FieldMetadata { Name = "firstName" },
-                new FieldMetadata { Name = "isCompany" },
-                new FieldMetadata { Name = "name" },
-                new FieldMetadata { Name = "middleName" },
-                new FieldMetadata { Name = "lastName" },
-                new FieldMetadata { Name = "organizationNo" },
-                new FieldMetadata { Name = "language" },
-                new FieldMetadata { Name = "contactInfo", IsComplex = true, QueryBuilderType = typeof(ContactInfoQueryBuilder) },
-                new FieldMetadata { Name = "address", IsComplex = true, QueryBuilderType = typeof(AddressQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "id" },
+            new FieldMetadata { Name = "firstName" },
+            new FieldMetadata { Name = "isCompany" },
+            new FieldMetadata { Name = "name" },
+            new FieldMetadata { Name = "middleName" },
+            new FieldMetadata { Name = "lastName" },
+            new FieldMetadata { Name = "organizationNo" },
+            new FieldMetadata { Name = "language" },
+            new FieldMetadata { Name = "contactInfo", IsComplex = true, QueryBuilderType = typeof(ContactInfoQueryBuilder) },
+            new FieldMetadata { Name = "address", IsComplex = true, QueryBuilderType = typeof(AddressQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public LegalEntityQueryBuilder WithId() => WithScalarField("id");
 
@@ -510,12 +528,13 @@ namespace Tibber.Sdk
 
     public class ContactInfoQueryBuilder : GraphQlQueryBuilder<ContactInfoQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "email" },
-                new FieldMetadata { Name = "mobile" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "email" },
+            new FieldMetadata { Name = "mobile" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public ContactInfoQueryBuilder WithEmail() => WithScalarField("email");
 
@@ -524,16 +543,17 @@ namespace Tibber.Sdk
 
     public class MeteringPointDataQueryBuilder : GraphQlQueryBuilder<MeteringPointDataQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "consumptionEan" },
-                new FieldMetadata { Name = "gridCompany" },
-                new FieldMetadata { Name = "productionEan" },
-                new FieldMetadata { Name = "energyTaxType" },
-                new FieldMetadata { Name = "vatType" },
-                new FieldMetadata { Name = "estimatedAnnualConsumption" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "consumptionEan" },
+            new FieldMetadata { Name = "gridCompany" },
+            new FieldMetadata { Name = "productionEan" },
+            new FieldMetadata { Name = "energyTaxType" },
+            new FieldMetadata { Name = "vatType" },
+            new FieldMetadata { Name = "estimatedAnnualConsumption" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public MeteringPointDataQueryBuilder WithConsumptionEan() => WithScalarField("consumptionEan");
 
@@ -550,17 +570,18 @@ namespace Tibber.Sdk
 
     public class SubscriptionQueryBuilder : GraphQlQueryBuilder<SubscriptionQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "id" },
-                new FieldMetadata { Name = "subscriber", IsComplex = true, QueryBuilderType = typeof(LegalEntityQueryBuilder) },
-                new FieldMetadata { Name = "validFrom" },
-                new FieldMetadata { Name = "validTo" },
-                new FieldMetadata { Name = "status" },
-                new FieldMetadata { Name = "statusReason" },
-                new FieldMetadata { Name = "priceInfo", IsComplex = true, QueryBuilderType = typeof(PriceInfoQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "id" },
+            new FieldMetadata { Name = "subscriber", IsComplex = true, QueryBuilderType = typeof(LegalEntityQueryBuilder) },
+            new FieldMetadata { Name = "validFrom" },
+            new FieldMetadata { Name = "validTo" },
+            new FieldMetadata { Name = "status" },
+            new FieldMetadata { Name = "statusReason" },
+            new FieldMetadata { Name = "priceInfo", IsComplex = true, QueryBuilderType = typeof(PriceInfoQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public SubscriptionQueryBuilder WithId() => WithScalarField("id");
 
@@ -579,14 +600,15 @@ namespace Tibber.Sdk
 
     public class PriceInfoQueryBuilder : GraphQlQueryBuilder<PriceInfoQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "current", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) },
-                new FieldMetadata { Name = "today", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) },
-                new FieldMetadata { Name = "tomorrow", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) },
-                new FieldMetadata { Name = "range", IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceConnectionQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "current", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) },
+            new FieldMetadata { Name = "today", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) },
+            new FieldMetadata { Name = "tomorrow", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) },
+            new FieldMetadata { Name = "range", IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceConnectionQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public PriceInfoQueryBuilder WithCurrent(PriceQueryBuilder priceQueryBuilder) => WithObjectField("current", priceQueryBuilder);
 
@@ -615,15 +637,16 @@ namespace Tibber.Sdk
 
     public class PriceQueryBuilder : GraphQlQueryBuilder<PriceQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "total" },
-                new FieldMetadata { Name = "energy" },
-                new FieldMetadata { Name = "tax" },
-                new FieldMetadata { Name = "startsAt" },
-                new FieldMetadata { Name = "currency" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "total" },
+            new FieldMetadata { Name = "energy" },
+            new FieldMetadata { Name = "tax" },
+            new FieldMetadata { Name = "startsAt" },
+            new FieldMetadata { Name = "currency" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public PriceQueryBuilder WithTotal() => WithScalarField("total");
 
@@ -638,13 +661,14 @@ namespace Tibber.Sdk
 
     public class SubscriptionPriceConnectionQueryBuilder : GraphQlQueryBuilder<SubscriptionPriceConnectionQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "pageInfo", IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceConnectionPageInfoQueryBuilder) },
-                new FieldMetadata { Name = "edges", IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceEdgeQueryBuilder) },
-                new FieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "pageInfo", IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceConnectionPageInfoQueryBuilder) },
+            new FieldMetadata { Name = "edges", IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceEdgeQueryBuilder) },
+            new FieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public SubscriptionPriceConnectionQueryBuilder WithPageInfo(SubscriptionPriceConnectionPageInfoQueryBuilder subscriptionPriceConnectionPageInfoQueryBuilder) => WithObjectField("pageInfo", subscriptionPriceConnectionPageInfoQueryBuilder);
 
@@ -655,22 +679,23 @@ namespace Tibber.Sdk
 
     public class SubscriptionPriceConnectionPageInfoQueryBuilder : GraphQlQueryBuilder<SubscriptionPriceConnectionPageInfoQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "endCursor" },
-                new FieldMetadata { Name = "hasNextPage" },
-                new FieldMetadata { Name = "hasPreviousPage" },
-                new FieldMetadata { Name = "startCursor" },
-                new FieldMetadata { Name = "resolution" },
-                new FieldMetadata { Name = "currency" },
-                new FieldMetadata { Name = "count" },
-                new FieldMetadata { Name = "precision" },
-                new FieldMetadata { Name = "minEnergy" },
-                new FieldMetadata { Name = "minTotal" },
-                new FieldMetadata { Name = "maxEnergy" },
-                new FieldMetadata { Name = "maxTotal" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "endCursor" },
+            new FieldMetadata { Name = "hasNextPage" },
+            new FieldMetadata { Name = "hasPreviousPage" },
+            new FieldMetadata { Name = "startCursor" },
+            new FieldMetadata { Name = "resolution" },
+            new FieldMetadata { Name = "currency" },
+            new FieldMetadata { Name = "count" },
+            new FieldMetadata { Name = "precision" },
+            new FieldMetadata { Name = "minEnergy" },
+            new FieldMetadata { Name = "minTotal" },
+            new FieldMetadata { Name = "maxEnergy" },
+            new FieldMetadata { Name = "maxTotal" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public SubscriptionPriceConnectionPageInfoQueryBuilder WithEndCursor() => WithScalarField("endCursor");
 
@@ -699,12 +724,13 @@ namespace Tibber.Sdk
 
     public class SubscriptionPriceEdgeQueryBuilder : GraphQlQueryBuilder<SubscriptionPriceEdgeQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "cursor" },
-                new FieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "cursor" },
+            new FieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(PriceQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public SubscriptionPriceEdgeQueryBuilder WithCursor() => WithScalarField("cursor");
 
@@ -713,13 +739,14 @@ namespace Tibber.Sdk
 
     public class HomeConsumptionConnectionQueryBuilder : GraphQlQueryBuilder<HomeConsumptionConnectionQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "pageInfo", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionPageInfoQueryBuilder) },
-                new FieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(ConsumptionQueryBuilder) },
-                new FieldMetadata { Name = "edges", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionEdgeQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "pageInfo", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionPageInfoQueryBuilder) },
+            new FieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(ConsumptionQueryBuilder) },
+            new FieldMetadata { Name = "edges", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionEdgeQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public HomeConsumptionConnectionQueryBuilder WithPageInfo(HomeConsumptionPageInfoQueryBuilder homeConsumptionPageInfoQueryBuilder) => WithObjectField("pageInfo", homeConsumptionPageInfoQueryBuilder);
 
@@ -730,19 +757,20 @@ namespace Tibber.Sdk
 
     public class HomeConsumptionPageInfoQueryBuilder : GraphQlQueryBuilder<HomeConsumptionPageInfoQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "endCursor" },
-                new FieldMetadata { Name = "hasNextPage" },
-                new FieldMetadata { Name = "hasPreviousPage" },
-                new FieldMetadata { Name = "startCursor" },
-                new FieldMetadata { Name = "count" },
-                new FieldMetadata { Name = "currency" },
-                new FieldMetadata { Name = "totalCost" },
-                new FieldMetadata { Name = "energyCost" },
-                new FieldMetadata { Name = "filtered" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "endCursor" },
+            new FieldMetadata { Name = "hasNextPage" },
+            new FieldMetadata { Name = "hasPreviousPage" },
+            new FieldMetadata { Name = "startCursor" },
+            new FieldMetadata { Name = "count" },
+            new FieldMetadata { Name = "currency" },
+            new FieldMetadata { Name = "totalCost" },
+            new FieldMetadata { Name = "energyCost" },
+            new FieldMetadata { Name = "filtered" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public HomeConsumptionPageInfoQueryBuilder WithEndCursor() => WithScalarField("endCursor");
 
@@ -765,19 +793,20 @@ namespace Tibber.Sdk
 
     public class ConsumptionQueryBuilder : GraphQlQueryBuilder<ConsumptionQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "from" },
-                new FieldMetadata { Name = "to" },
-                new FieldMetadata { Name = "unitPrice" },
-                new FieldMetadata { Name = "unitPriceVAT" },
-                new FieldMetadata { Name = "consumption" },
-                new FieldMetadata { Name = "consumptionUnit" },
-                new FieldMetadata { Name = "totalCost" },
-                new FieldMetadata { Name = "unitCost" },
-                new FieldMetadata { Name = "currency" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "from" },
+            new FieldMetadata { Name = "to" },
+            new FieldMetadata { Name = "unitPrice" },
+            new FieldMetadata { Name = "unitPriceVAT" },
+            new FieldMetadata { Name = "consumption" },
+            new FieldMetadata { Name = "consumptionUnit" },
+            new FieldMetadata { Name = "totalCost" },
+            new FieldMetadata { Name = "unitCost" },
+            new FieldMetadata { Name = "currency" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public ConsumptionQueryBuilder WithFrom() => WithScalarField("from");
 
@@ -800,12 +829,13 @@ namespace Tibber.Sdk
 
     public class HomeConsumptionEdgeQueryBuilder : GraphQlQueryBuilder<HomeConsumptionEdgeQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "cursor" },
-                new FieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(ConsumptionQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "cursor" },
+            new FieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(ConsumptionQueryBuilder) }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public HomeConsumptionEdgeQueryBuilder WithCursor() => WithScalarField("cursor");
 
@@ -814,24 +844,28 @@ namespace Tibber.Sdk
 
     public class HomeFeaturesQueryBuilder : GraphQlQueryBuilder<HomeFeaturesQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "realTimeConsumptionEnabled" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "realTimeConsumptionEnabled" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public HomeFeaturesQueryBuilder WithRealTimeConsumptionEnabled() => WithScalarField("realTimeConsumptionEnabled");
     }
 
     public class RootMutationQueryBuilder : GraphQlQueryBuilder<RootMutationQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "sendMeterReading", IsComplex = true, QueryBuilderType = typeof(MeterReadingResponseQueryBuilder) },
-                new FieldMetadata { Name = "updateHome", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) },
-                new FieldMetadata { Name = "sendPushNotification", IsComplex = true, QueryBuilderType = typeof(PushNotificationResponseQueryBuilder) }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "sendMeterReading", IsComplex = true, QueryBuilderType = typeof(MeterReadingResponseQueryBuilder) },
+            new FieldMetadata { Name = "updateHome", IsComplex = true, QueryBuilderType = typeof(HomeQueryBuilder) },
+            new FieldMetadata { Name = "sendPushNotification", IsComplex = true, QueryBuilderType = typeof(PushNotificationResponseQueryBuilder) }
+        };
+
+        protected override string Prefix { get; } = "mutation";
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public RootMutationQueryBuilder WithSendMeterReading(MeterReadingResponseQueryBuilder meterReadingResponseQueryBuilder, MeterReadingInput input)
         {
@@ -854,13 +888,14 @@ namespace Tibber.Sdk
 
     public class MeterReadingResponseQueryBuilder : GraphQlQueryBuilder<MeterReadingResponseQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "homeId" },
-                new FieldMetadata { Name = "time" },
-                new FieldMetadata { Name = "reading" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "homeId" },
+            new FieldMetadata { Name = "time" },
+            new FieldMetadata { Name = "reading" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public MeterReadingResponseQueryBuilder WithHomeId() => WithScalarField("homeId");
 
@@ -871,12 +906,13 @@ namespace Tibber.Sdk
 
     public class PushNotificationResponseQueryBuilder : GraphQlQueryBuilder<PushNotificationResponseQueryBuilder>
     {
-        protected override IList<FieldMetadata> AllFields { get; } =
-            new[]
-            {
-                new FieldMetadata { Name = "successful" },
-                new FieldMetadata { Name = "pushedToNumberOfDevices" }
-            };
+        private static readonly FieldMetadata[] AllFieldMetadata =
+        {
+            new FieldMetadata { Name = "successful" },
+            new FieldMetadata { Name = "pushedToNumberOfDevices" }
+        };
+
+        protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
 
         public PushNotificationResponseQueryBuilder WithSuccessful() => WithScalarField("successful");
 
