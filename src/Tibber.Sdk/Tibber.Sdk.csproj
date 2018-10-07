@@ -1,21 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyTitle>Tibber API C# Client</AssemblyTitle>
-    <Description>Tibber C# SDK</Description>
+    <AssemblyTitle>Tibber SDK.NET</AssemblyTitle>
+    <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <VersionPrefix>0.1</VersionPrefix>
+    <Version>0.1.0-beta-1</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright 2017</Copyright>
+    <Title>Tibber SDK.NET</Title>
     <PackageLicenseUrl>https://raw.githubusercontent.com/tibbercom/Tibber.SDK.NET/master/License.md</PackageLicenseUrl>
     <PackageProjectUrl>https://developer.tibber.com/</PackageProjectUrl>
     <PackageIconUrl>https://lh3.googleusercontent.com/EMPZKxEewbjzlAKuj5tbKxH7ah-XxVaEKs667J143Nk2NhzcspAC9ybQFmA8coAg_w=w300</PackageIconUrl>
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>GraphGL C# Client Tibber</PackageTags>
-    <PackageReleaseNotes>Initial alpha release</PackageReleaseNotes>
+    <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
+    <PackageReleaseNotes>Initial beta release</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
