@@ -57,6 +57,12 @@ namespace Tibber.Sdk
             StartListening();
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
+        /// <param name="observer"></param>
+        /// <exception cref="T:System.ArgumentException"></exception>
+        /// <returns></returns>
         public IDisposable Subscribe(IObserver<LiveMeasurement> observer)
         {
             lock (_liveMeasurementObservers)
@@ -136,7 +142,7 @@ namespace Tibber.Sdk
                 }
                 catch (Exception)
                 {
-                    // disposing not suppose to throw
+                    // disposing not supposed to throw
                 }
 
             _cancellationTokenSource.Dispose();

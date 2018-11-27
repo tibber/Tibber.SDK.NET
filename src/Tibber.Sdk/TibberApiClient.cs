@@ -41,6 +41,9 @@ namespace Tibber.Sdk
 
         public TibberApiClient(string accessToken, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null)
         {
+            if (String.IsNullOrWhiteSpace(accessToken))
+                throw new ArgumentException("access token required", nameof(accessToken));
+
             _accessToken = accessToken;
 
             messageHandler = messageHandler ?? new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
@@ -72,6 +75,7 @@ namespace Tibber.Sdk
         /// Gets base data about customer, his/her homes and subscriptions.
         /// </summary>
         /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
         public async Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default)
         {
@@ -87,6 +91,7 @@ namespace Tibber.Sdk
         /// <param name="resolution"></param>
         /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
         /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>consumption entries</returns>
         public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, ConsumptionResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
         {
@@ -100,6 +105,7 @@ namespace Tibber.Sdk
         /// </summary>
         /// <param name="query">query text</param>
         /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
         public Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default) =>
             Request<TibberApiQueryResult>(query, cancellationToken);
@@ -109,6 +115,7 @@ namespace Tibber.Sdk
         /// </summary>
         /// <param name="mutation">query text</param>
         /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
         public Task<TibberApiMutationResult> Mutation(string mutation, CancellationToken cancellationToken = default) =>
             Request<TibberApiMutationResult>(mutation, cancellationToken);
@@ -118,6 +125,7 @@ namespace Tibber.Sdk
         /// </summary>
         /// <param name="homeId"></param>
         /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
         public async Task<IObservable<LiveMeasurement>> StartLiveMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
         {
@@ -166,16 +174,24 @@ namespace Tibber.Sdk
 
             var requestStart = DateTimeOffset.UtcNow;
 
-            using (var response = await _httpClient.PostAsync(relativeUri, JsonContent(new { query }), cancellationToken))
-            {
-                if (!response.IsSuccessStatusCode)
-                    throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+            HttpResponseMessage response;
 
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var streamReader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(streamReader))
-                    return Serializer.Deserialize<TResult>(jsonReader);
+            try
+            {
+                response = await _httpClient.PostAsync(relativeUri, JsonContent(new { query }), cancellationToken);
             }
+            catch (Exception exception)
+            {
+                throw new TibberApiHttpException(new Uri(_httpClient.BaseAddress, relativeUri), HttpMethod.Post, DateTimeOffset.Now - requestStart, exception.Message, exception);
+            }
+
+            if (!response.IsSuccessStatusCode)
+                throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(streamReader))
+                return Serializer.Deserialize<TResult>(jsonReader);
         }
 
         private static HttpContent JsonContent(object data) =>

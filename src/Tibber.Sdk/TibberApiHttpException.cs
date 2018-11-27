@@ -23,6 +23,7 @@ namespace Tibber.Sdk
     {
         private const int MaximumBodyLength = 131071;
 
+        public bool IsHttpException { get; }
         public HttpStatusCode? StatusCode { get; }
         public HttpMethod HttpMethod { get; }
         public TimeSpan RequestDuration { get; }
@@ -46,12 +47,21 @@ namespace Tibber.Sdk
             string message)
             : base(message)
         {
+            IsHttpException = true;
             Uri = uri;
             HttpMethod = httpMethod;
             StatusCode = statusCode;
             ReasonPhrase = reasonPhrase;
             RequestHeaders = requestHeaders;
             ResponseHeaders = responseHeaders;
+            RequestDuration = requestDuration;
+        }
+
+        internal TibberApiHttpException(Uri uri, HttpMethod httpMethod, TimeSpan requestDuration, string message = null, Exception exception = null)
+            : base(message ?? $"HTTP '{httpMethod} {uri}' call failed{(exception == null ? null : $": {GetOriginalExceptionMessage(exception)}")}", exception)
+        {
+            Uri = uri;
+            HttpMethod = httpMethod;
             RequestDuration = requestDuration;
         }
 
