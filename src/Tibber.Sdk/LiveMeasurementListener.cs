@@ -34,7 +34,7 @@ namespace Tibber.Sdk
             var subscriptionRequest =
                 new ArraySegment<byte>(
                     Encoding.ASCII.GetBytes(
-                        $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{_homeId}\""){{timestamp,power,accumulatedConsumption,accumulatedCost,currency,minPower,averagePower,maxPower}}}}"",""variables"":null,""type"":""subscription_start"",""id"":0}}"));
+                        $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{_homeId}\""){{timestamp,power,accumulatedConsumption,accumulatedCost,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3}}}}"",""variables"":null,""type"":""subscription_start"",""id"":0}}"));
 
             _wssClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", "graphql-subscriptions");
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
@@ -211,5 +211,12 @@ namespace Tibber.Sdk
         /// Max power since midnight
         /// </summary>
         public decimal MaxPower { get; set; }
+
+        public decimal? VoltagePhase1 { get; set; }
+        public decimal? VoltagePhase2 { get; set; }
+        public decimal? VoltagePhase3 { get; set; }
+        public decimal? CurrentPhase1 { get; set; }
+        public decimal? CurrentPhase2 { get; set; }
+        public decimal? CurrentPhase3 { get; set; }
     }
 }
