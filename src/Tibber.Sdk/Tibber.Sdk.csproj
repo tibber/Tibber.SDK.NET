@@ -5,7 +5,7 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.1.0-beta-2</Version>
+    <Version>0.1.0-beta-3</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright 2017</Copyright>
@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
-    <PackageReleaseNotes>Initial beta release</PackageReleaseNotes>
+    <PackageReleaseNotes>Added live measurement voltage and current values</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.*" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.*" />
   </ItemGroup>
 
   <ItemGroup Condition = "'$(TargetFramework)' == 'net45'">
