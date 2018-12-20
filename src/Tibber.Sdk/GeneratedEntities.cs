@@ -547,6 +547,8 @@ namespace Tibber.Sdk
         {
             new FieldMetadata { Name = "consumptionEan" },
             new FieldMetadata { Name = "gridCompany" },
+            new FieldMetadata { Name = "gridAreaCode" },
+            new FieldMetadata { Name = "priceAreaCode" },
             new FieldMetadata { Name = "productionEan" },
             new FieldMetadata { Name = "energyTaxType" },
             new FieldMetadata { Name = "vatType" },
@@ -558,6 +560,10 @@ namespace Tibber.Sdk
         public MeteringPointDataQueryBuilder WithConsumptionEan() => WithScalarField("consumptionEan");
 
         public MeteringPointDataQueryBuilder WithGridCompany() => WithScalarField("gridCompany");
+
+        public MeteringPointDataQueryBuilder WithGridAreaCode() => WithScalarField("gridAreaCode");
+
+        public MeteringPointDataQueryBuilder WithPriceAreaCode() => WithScalarField("priceAreaCode");
 
         public MeteringPointDataQueryBuilder WithProductionEan() => WithScalarField("productionEan");
 
@@ -1078,6 +1084,14 @@ namespace Tibber.Sdk
         /// The grid provider of the home
         /// </summary>
         public string GridCompany { get; set; }
+        /// <summary>
+        /// The grid area the home/metering point belongs to
+        /// </summary>
+        public string GridAreaCode { get; set; }
+        /// <summary>
+        /// The price area the home/metering point belongs to
+        /// </summary>
+        public string PriceAreaCode { get; set; }
         /// <summary>
         /// The metering point ID of the production
         /// </summary>
