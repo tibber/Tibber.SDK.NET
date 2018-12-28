@@ -22,6 +22,7 @@ namespace Tibber.Sdk
 
         private ClientWebSocket _wssClient;
         private bool _isInitialized;
+        private bool _isDisposed;
 
         public LiveMeasurementListener(string accessToken, Guid homeId)
         {
@@ -154,12 +155,17 @@ namespace Tibber.Sdk
 
         public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
-
             ICollection<IObserver<LiveMeasurement>> observers;
 
             lock (_liveMeasurementObservers)
             {
+                if (_isDisposed)
+                    return;
+
+                _isDisposed = true;
+
+                _cancellationTokenSource.Cancel();
+
                 observers = _liveMeasurementObservers.ToArray();
                 _liveMeasurementObservers.Clear();
             }
