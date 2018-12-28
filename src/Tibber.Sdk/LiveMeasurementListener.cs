@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -11,15 +12,15 @@ namespace Tibber.Sdk
 {
     internal class LiveMeasurementListener : IObservable<LiveMeasurement>, IDisposable
     {
-        private readonly ArraySegment<byte> _receiveBuffer = new ArraySegment<byte>(new byte[4096]);
+        private readonly ArraySegment<byte> _receiveBuffer = new ArraySegment<byte>(new byte[16384]);
         private readonly HashSet<IObserver<LiveMeasurement>> _liveMeasurementObservers = new HashSet<IObserver<LiveMeasurement>>();
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         private readonly string _accessToken;
         private readonly Guid _homeId;
 
-        private readonly ClientWebSocket _wssClient = new ClientWebSocket();
-
+        private ClientWebSocket _wssClient;
         private bool _isInitialized;
 
         public LiveMeasurementListener(string accessToken, Guid homeId)
@@ -30,19 +31,41 @@ namespace Tibber.Sdk
 
         public async Task Initialize(CancellationToken cancellationToken)
         {
-            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""init"",""payload"":""token={_accessToken}""}}"));
-            var subscriptionRequest =
-                new ArraySegment<byte>(
-                    Encoding.ASCII.GetBytes(
-                        $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{_homeId}\""){{timestamp,power,accumulatedConsumption,accumulatedCost,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3}}}}"",""variables"":null,""type"":""subscription_start"",""id"":0}}"));
+            await _semaphore.WaitAsync(cancellationToken);
 
+            if (_isInitialized)
+                throw new InvalidOperationException("listener already initialized");
+
+            try
+            {
+                await InitializeInternal(cancellationToken);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+            StartListening();
+        }
+
+        private async Task InitializeInternal(CancellationToken cancellationToken)
+        {
+            _wssClient?.Dispose();
+            _wssClient = new ClientWebSocket();
             _wssClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", "graphql-subscriptions");
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
+
+            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""init"",""payload"":""token={_accessToken}""}}"));
             await _wssClient.SendAsync(init, WebSocketMessageType.Text, true, cancellationToken);
 
             var result = await _wssClient.ReceiveAsync(_receiveBuffer, cancellationToken);
             if (result.CloseStatus.HasValue)
                 throw new InvalidOperationException($"web socket initialization failed: {result.CloseStatus}");
+
+            var subscriptionRequest =
+                new ArraySegment<byte>(
+                    Encoding.ASCII.GetBytes(
+                        $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{_homeId}\""){{timestamp,power,accumulatedConsumption,accumulatedCost,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3}}}}"",""variables"":null,""type"":""subscription_start"",""id"":0}}"));
 
             await _wssClient.SendAsync(subscriptionRequest, WebSocketMessageType.Text, true, cancellationToken);
             result = await _wssClient.ReceiveAsync(_receiveBuffer, cancellationToken);
@@ -53,8 +76,6 @@ namespace Tibber.Sdk
                 throw new InvalidOperationException($"web socket initialization failed: {message.Payload?.Error ?? data}");
 
             _isInitialized = true;
-
-            StartListening();
         }
 
         /// <inheritdoc />
@@ -83,31 +104,37 @@ namespace Tibber.Sdk
             {
                 var stringBuilder = new StringBuilder();
 
-                WebSocketReceiveResult result;
-
-                do
+                try
                 {
-                    try
+                    WebSocketReceiveResult result;
+
+                    do
                     {
                         result = await _wssClient.ReceiveAsync(_receiveBuffer, _cancellationTokenSource.Token);
-                    }
-                    catch (WebSocketException exception) when (exception.InnerException is OperationCanceledException)
-                    {
-                        Dispose();
-                        return;
-                    }
-                    catch (Exception exception)
-                    {
-                        foreach (var observer in _liveMeasurementObservers)
-                            observer.OnError(exception);
+                        var json = Encoding.ASCII.GetString(_receiveBuffer.Array, 0, result.Count);
+                        stringBuilder.Append(json);
+                    } while (!result.EndOfMessage);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch (Exception exception)
+                {
+                    foreach (var observer in _liveMeasurementObservers)
+                        observer.OnError(exception);
 
-                        Dispose();
-                        return;
+                    if (exception.InnerException is IOException)
+                    {
+                        await TryReconnect();
+
+                        if (!_cancellationTokenSource.IsCancellationRequested)
+                            continue;
                     }
 
-                    var json = Encoding.ASCII.GetString(_receiveBuffer.Array, 0, result.Count);
-                    stringBuilder.Append(json);
-                } while (!result.EndOfMessage);
+                    Dispose();
+                    return;
+                }
 
                 var stringRecords = stringBuilder.ToString();
 
@@ -127,6 +154,8 @@ namespace Tibber.Sdk
 
         public void Dispose()
         {
+            _cancellationTokenSource.Cancel();
+
             ICollection<IObserver<LiveMeasurement>> observers;
 
             lock (_liveMeasurementObservers)
@@ -145,8 +174,41 @@ namespace Tibber.Sdk
                     // disposing not supposed to throw
                 }
 
-            _cancellationTokenSource.Dispose();
             _wssClient.Dispose();
+            _cancellationTokenSource.Dispose();
+        }
+
+        private async Task TryReconnect()
+        {
+            var failures = 0;
+
+            while (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(GetDelaySeconds(failures)));
+                    await InitializeInternal(_cancellationTokenSource.Token);
+                    return;
+                }
+                catch (Exception)
+                {
+                    failures++;
+                }
+            }
+        }
+
+        private static int GetDelaySeconds(int failures)
+        {
+            if (failures == 0)
+                return 0;
+
+            if (failures == 1)
+                return 1;
+
+            if (failures <= 3)
+                return 5;
+
+            return 60;
         }
 
         private class Unsubscriber : IDisposable

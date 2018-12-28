@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
-    <PackageReleaseNotes>Added priceAreaCode/gridAreaCode to MeteringPointData</PackageReleaseNotes>
+    <PackageReleaseNotes>Added priceAreaCode/gridAreaCode to MeteringPointData; listener automatically tries to reconnect to the web socket on a network failure</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
