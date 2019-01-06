@@ -1,4 +1,4 @@
-Tibber SDK.NET (beta)
+Tibber SDK.NET (beta) [![NuGet Badge](https://buildstats.info/nuget/Tibber.Sdk?includePreReleases=true)](https://www.nuget.org/packages/Tibber.Sdk)
 =======================
 
 Package for accessing Tibber API.
