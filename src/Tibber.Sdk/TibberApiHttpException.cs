@@ -88,7 +88,7 @@ namespace Tibber.Sdk
                 }
                 catch
                 {
-                    // We're already handling an exception at this point, so we want to make sure we don't throw another one that hides the real error.
+                    exception.RequestContent = "<unavailable>";
                 }
 
                 response.RequestMessage.Content.Dispose();
@@ -104,7 +104,7 @@ namespace Tibber.Sdk
                 }
                 catch
                 {
-                    // We're already handling an exception at this point, so we want to make sure we don't throw another one that hides the real error.
+                    exception.RequestContent = "<unavailable>";
                 }
 
                 response.Content.Dispose();
