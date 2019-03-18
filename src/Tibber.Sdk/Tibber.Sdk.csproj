@@ -5,7 +5,7 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.1.0-beta-4</Version>
+    <Version>0.1.0-beta-5</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright 2017</Copyright>
@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
-    <PackageReleaseNotes>Added priceAreaCode/gridAreaCode to MeteringPointData; listener automatically tries to reconnect to the web socket on a network failure</PackageReleaseNotes>
+    <PackageReleaseNotes>includes newly added fields, see https://developer.tibber.com/docs/changelog</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

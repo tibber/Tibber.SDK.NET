@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -35,16 +36,40 @@ namespace Tibber.Sdk
                 return mutationInput.Build(formatting, level + 2, indentationSize);
 
             var argumentValue = Convert.ToString(value, CultureInfo.InvariantCulture);
-            return value is String || value is Guid ? $"\"{argumentValue}\"" : argumentValue;
+            if (value is String || value is Guid)
+                return $"\"{argumentValue}\"";
+
+            if (value is IEnumerable enumerable)
+            {
+                var builder = new StringBuilder();
+                builder.Append("[");
+                var delimiter = String.Empty;
+                foreach (var item in enumerable)
+                {
+                    builder.Append(delimiter);
+
+                    if (formatting == Formatting.Indented)
+                    {
+                        builder.AppendLine();
+                        builder.Append(GetIndentation(level + 1, indentationSize));
+                    }
+
+                    builder.Append(BuildArgumentValue(item, formatting, level, indentationSize));
+                    delimiter = ",";
+                }
+
+                builder.Append("]");
+                return builder.ToString();
+            }
+
+            return argumentValue;
         }
 
         private static string ConvertEnumToString(Enum @enum)
         {
-            var enumMember =
-                @enum.GetType()
-                    .GetTypeInfo()
-                    .GetMembers()
-                    .Single(m => String.Equals(m.Name, @enum.ToString()));
+            var enumMember = @enum.GetType().GetTypeInfo().GetField(@enum.ToString());
+            if (enumMember == null)
+                throw new InvalidOperationException("enum member resolution failed");
 
             var enumMemberAttribute = (EnumMemberAttribute)enumMember.GetCustomAttribute(typeof(EnumMemberAttribute));
 
@@ -304,6 +329,15 @@ namespace Tibber.Sdk
         [EnumMember(Value = "ELECTRIC_BOILER")] ElectricBoiler,
         [EnumMember(Value = "AIR2WATER_HEATPUMP")] Air2WaterHeatpump,
         [EnumMember(Value = "OTHER")] Other
+    }
+
+    public enum PriceLevel
+    {
+        [EnumMember(Value = "NORMAL")] Normal,
+        [EnumMember(Value = "CHEAP")] Cheap,
+        [EnumMember(Value = "VERY_CHEAP")] VeryCheap,
+        [EnumMember(Value = "EXPENSIVE")] Expensive,
+        [EnumMember(Value = "VERY_EXPENSIVE")] VeryExpensive
     }
 
     public enum PriceResolution
@@ -649,7 +683,8 @@ namespace Tibber.Sdk
             new FieldMetadata { Name = "energy" },
             new FieldMetadata { Name = "tax" },
             new FieldMetadata { Name = "startsAt" },
-            new FieldMetadata { Name = "currency" }
+            new FieldMetadata { Name = "currency" },
+            new FieldMetadata { Name = "level" }
         };
 
         protected override IList<FieldMetadata> AllFields { get; } = AllFieldMetadata;
@@ -663,6 +698,8 @@ namespace Tibber.Sdk
         public PriceQueryBuilder WithStartsAt() => WithScalarField("startsAt");
 
         public PriceQueryBuilder WithCurrency() => WithScalarField("currency");
+
+        public PriceQueryBuilder WithLevel() => WithScalarField("level");
     }
 
     public class SubscriptionPriceConnectionQueryBuilder : GraphQlQueryBuilder<SubscriptionPriceConnectionQueryBuilder>
@@ -1158,7 +1195,7 @@ namespace Tibber.Sdk
     public class Price
     {
         /// <summary>
-        /// The total price (energy+tax)
+        /// The total price (energy + taxes)
         /// </summary>
         public decimal? Total { get; set; }
         /// <summary>
@@ -1166,7 +1203,7 @@ namespace Tibber.Sdk
         /// </summary>
         public decimal? Energy { get; set; }
         /// <summary>
-        /// The tax part of the price (elcertificate, eltax (Sweden only) and VAT)
+        /// The tax part of the price (guarantee of origin certificate, energy tax (Sweden only) and VAT)
         /// </summary>
         public decimal? Tax { get; set; }
         /// <summary>
@@ -1177,6 +1214,10 @@ namespace Tibber.Sdk
         /// The price currency
         /// </summary>
         public string Currency { get; set; }
+        /// <summary>
+        /// The price level compared to recent price values
+        /// </summary>
+        public PriceLevel? Level { get; set; }
     }
 
     public class SubscriptionPriceConnection

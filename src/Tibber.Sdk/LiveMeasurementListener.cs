@@ -66,7 +66,7 @@ namespace Tibber.Sdk
             var subscriptionRequest =
                 new ArraySegment<byte>(
                     Encoding.ASCII.GetBytes(
-                        $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{_homeId}\""){{timestamp,power,accumulatedConsumption,accumulatedCost,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3}}}}"",""variables"":null,""type"":""subscription_start"",""id"":0}}"));
+                        $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{_homeId}\""){{timestamp,power,powerProduction,accumulatedConsumption,accumulatedProduction,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3,lastMeterConsumption,lastMeterProduction,}}}}"",""variables"":null,""type"":""subscription_start"",""id"":0}}"));
 
             await _wssClient.SendAsync(subscriptionRequest, WebSocketMessageType.Text, true, cancellationToken);
             result = await _wssClient.ReceiveAsync(_receiveBuffer, cancellationToken);
