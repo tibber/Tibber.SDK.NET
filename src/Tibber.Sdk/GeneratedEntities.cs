@@ -35,6 +35,9 @@ namespace Tibber.Sdk
             if (value is GraphQlMutationInput mutationInput)
                 return mutationInput.Build(formatting, level + 2, indentationSize);
 
+            if (value is bool @bool)
+                return @bool ? "true" : "false";
+
             var argumentValue = Convert.ToString(value, CultureInfo.InvariantCulture);
             if (value is String || value is Guid)
                 return $"\"{argumentValue}\"";
