@@ -53,6 +53,7 @@ namespace Tibber.Sdk
         {
             _wssClient?.Dispose();
             _wssClient = new ClientWebSocket();
+            _wssClient.Options.AddSubProtocol("graphql-subscriptions");
             _wssClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", "graphql-subscriptions");
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
 
