@@ -103,7 +103,7 @@ await client.Query(query);
 
 Real-time measurement usage
 -------------
-You must have active Tibber Pulse device at your home to access real-time measurements. `basicData.Data.Viewer.Home.Features.RealTimeConsumptionEnabled` must return `true`.
+You must have active Tibber Pulse or Watty device at your home to access real-time measurements. `basicData.Data.Viewer.Home.Features.RealTimeConsumptionEnabled` must return `true`.
 
 Sample observer implementation:
 ```
