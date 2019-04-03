@@ -17,6 +17,7 @@ namespace Tibber.Sdk
         public Guid HomeId { get; }
         public int SubscriptionId { get; }
         public bool IsInitialized { get; private set; }
+        public string ErrorMessage { get; private set; }
 
         public HomeLiveMeasurementObservable(LiveMeasurementListener listener, Guid homeId, int subscriptionId)
         {
@@ -34,6 +35,18 @@ namespace Tibber.Sdk
         public IDisposable Subscribe(IObserver<LiveMeasurement> observer) => _listener.SubscribeObserver(this, observer);
 
         public void Initialize() => IsInitialized = true;
+
+        public void Reset()
+        {
+            IsInitialized = false;
+            ErrorMessage = null;
+        }
+
+        public void Error(string data)
+        {
+            ErrorMessage = data;
+            Initialize();
+        }
     }
 
     internal class LiveMeasurementListener : IDisposable
@@ -77,16 +90,26 @@ namespace Tibber.Sdk
                 observable = collection.Observable;
             }
 
-            if (shouldInitialize)
+            try
             {
-                await Initialize(cancellationToken);
-                StartListening();
+                if (shouldInitialize)
+                {
+                    await Initialize(cancellationToken);
+                    StartListening();
+                }
+
+                await SubscribeStream(homeId, subscriptionId, cancellationToken);
+
+                if (!observable.IsInitialized)
+                    throw new InvalidOperationException($"live measurement subscription initialization failed{(observable.ErrorMessage == null ? null : $": {observable.ErrorMessage}")}");
             }
+            catch
+            {
+                lock (_homeObservables)
+                    _homeObservables.Remove(homeId);
 
-            await SubscribeStream(homeId, subscriptionId, cancellationToken);
-
-            if (!observable.IsInitialized)
-                throw new InvalidOperationException("live measurement subscription initialization failed");
+                throw;
+            }
 
             return observable;
         }
@@ -137,14 +160,14 @@ namespace Tibber.Sdk
         private async Task SubscribeStream(Guid homeId, int subscriptionId, CancellationToken cancellationToken)
         {
             await ExecuteStreamRequest(
-                $@"{{""query"":""subscription{{liveMeasurement(homeId:\""{homeId}\""){{timestamp,power,powerProduction,accumulatedConsumption,accumulatedProduction,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3,lastMeterConsumption,lastMeterProduction}}}}"",""variables"":null,""type"":""subscription_start"",""id"":{subscriptionId}}}",
+                $@"{{""payload"":{{""query"":""subscription{{liveMeasurement(homeId:\""{homeId}\""){{timestamp,power,powerProduction,accumulatedConsumption,accumulatedProduction,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3,lastMeterConsumption,lastMeterProduction}}}}"",""variables"":{{}},""extensions"":{{}},""operationName"":null}},""type"":""start"",""id"":{subscriptionId}}}",
                 cancellationToken);
 
             await _semaphore.WaitAsync(cancellationToken);
         }
 
         private Task UnsubscribeStream(int subscriptionId, CancellationToken cancellationToken) =>
-            ExecuteStreamRequest($@"{{""type"":""subscription_end"",""id"":{subscriptionId}}}", cancellationToken);
+            ExecuteStreamRequest($@"{{""type"":""stop"",""id"":{subscriptionId}}}", cancellationToken);
 
         private Task ExecuteStreamRequest(string request, CancellationToken cancellationToken)
         {
@@ -162,12 +185,17 @@ namespace Tibber.Sdk
             _wssClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", webSocketSubProtocol);
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
 
-            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""init"",""payload"":""token={_accessToken}""}}"));
+            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""connection_init"",""payload"":""token={_accessToken}""}}"));
             await _wssClient.SendAsync(init, WebSocketMessageType.Text, true, cancellationToken);
 
             var result = await _wssClient.ReceiveAsync(_receiveBuffer, cancellationToken);
             if (result.CloseStatus.HasValue)
                 throw new InvalidOperationException($"web socket initialization failed: {result.CloseStatus}");
+
+            var json = Encoding.ASCII.GetString(_receiveBuffer.Array, 0, result.Count);
+            var message = JsonConvert.DeserializeObject<WebSocketMessage>(json);
+            if (message.Type != "connection_ack")
+                throw new InvalidOperationException($"web socket initialization failed: {json}");
 
             _isInitialized = true;
         }
@@ -248,7 +276,13 @@ namespace Tibber.Sdk
                     {
                         switch (message.Type)
                         {
-                            case "subscription_data":
+                            case "data":
+                                if (!homeStreamObserverCollection.Observable.IsInitialized)
+                                {
+                                    homeStreamObserverCollection.Observable.Initialize();
+                                    _semaphore.Release();
+                                }
+
                                 var measurement = message.Payload?.Data?.LiveMeasurement;
                                 if (measurement == null)
                                     continue;
@@ -256,11 +290,14 @@ namespace Tibber.Sdk
                                 ExecuteObserverAction(homeStreamObserverCollection.Observers.ToArray(), o => o.OnNext(measurement));
 
                                 break;
-                            case "subscription_success":
-                                homeStreamObserverCollection.Observable.Initialize();
-                                _semaphore.Release();
+                            case "complete":
+                                ExecuteObserverAction(homeStreamObserverCollection.Observers.ToArray(), o => o.OnCompleted());
+                                lock (_homeObservables)
+                                    _homeObservables.Remove(homeStreamObserverCollection.Observable.HomeId);
+
                                 break;
-                            case "subscription_fail":
+                            case "error":
+                                homeStreamObserverCollection.Observable.Error(message.Payload.Error);
                                 _semaphore.Release();
                                 break;
                         }
