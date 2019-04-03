@@ -34,7 +34,7 @@ namespace Tibber.Sdk
 
         private static readonly JsonSerializer Serializer = JsonSerializer.Create(JsonSerializerSettings);
 
-        private readonly Dictionary<Guid, LiveMeasurementListener> _liveMeasurementListeners = new Dictionary<Guid, LiveMeasurementListener>();
+        private readonly LiveMeasurementListener _liveMeasurementListener;
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
@@ -59,15 +59,13 @@ namespace Tibber.Sdk
                         UserAgent = { new ProductInfoHeaderValue("Tibber-SDK.NET", "1.0") }
                     }
                 };
+
+            _liveMeasurementListener = new LiveMeasurementListener(accessToken);
         }
 
         public void Dispose()
         {
-            foreach (var liveMeasurementListener in _liveMeasurementListeners.Values)
-                liveMeasurementListener.Dispose();
-
-            _liveMeasurementListeners.Clear();
-
+            _liveMeasurementListener.Dispose();
             _httpClient.Dispose();
         }
 
@@ -131,41 +129,32 @@ namespace Tibber.Sdk
         {
             await Semaphore.WaitAsync(cancellationToken);
 
-            LiveMeasurementListener liveMeasurementListener;
-
             try
             {
-                if (_liveMeasurementListeners.TryGetValue(homeId, out var listener))
-                    listener.Dispose();
-
-                liveMeasurementListener = new LiveMeasurementListener(_accessToken, homeId);
-                _liveMeasurementListeners[homeId] = liveMeasurementListener;
-
-                await liveMeasurementListener.Initialize(cancellationToken);
+                return await _liveMeasurementListener.SubscribeHome(homeId, cancellationToken);
             }
             finally
             {
                 Semaphore.Release();
             }
-
-            return liveMeasurementListener;
         }
 
         /// <summary>
         /// Stops live measurement listener.
         /// </summary>
         /// <param name="homeId"></param>
-        public void StopLiveMeasurementListener(Guid homeId)
+        public async Task StopLiveMeasurementListener(Guid homeId)
         {
-            Semaphore.Wait();
+            await Semaphore.WaitAsync();
 
-            if (_liveMeasurementListeners.TryGetValue(homeId, out var listener))
+            try
             {
-                _liveMeasurementListeners.Remove(homeId);
-                listener.Dispose();
+                await _liveMeasurementListener.UnsubscribeHome(homeId, CancellationToken.None);
             }
-
-            Semaphore.Release();
+            finally
+            {
+                Semaphore.Release();
+            }
         }
 
         private async Task<TResult> Request<TResult>(string query, CancellationToken cancellationToken)
