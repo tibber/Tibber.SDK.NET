@@ -334,12 +334,30 @@ namespace Tibber.Sdk
         [EnumMember(Value = "OTHER")] Other
     }
 
+    /// <summary>
+    /// Price level based on trailing price average (3 days for hourly values and 30 days for daily values)
+    /// </summary>
     public enum PriceLevel
     {
+        /// <summary>
+        /// The price is greater than 90 % and smaller than 115 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "NORMAL")] Normal,
+        /// <summary>
+        /// The price is greater than 60 % and smaller or equal to 90 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "CHEAP")] Cheap,
+        /// <summary>
+        /// The price is smaller or equal to 60 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "VERY_CHEAP")] VeryCheap,
+        /// <summary>
+        /// The price is greater or equal to 115 % and smaller than 140 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "EXPENSIVE")] Expensive,
+        /// <summary>
+        /// The price is greater or equal to 140 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "VERY_EXPENSIVE")] VeryExpensive
     }
 
