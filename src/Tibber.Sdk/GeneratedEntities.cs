@@ -32,11 +32,11 @@ namespace Tibber.Sdk
             if (value is Enum @enum)
                 return ConvertEnumToString(@enum);
 
-            if (value is GraphQlMutationInput mutationInput)
-                return mutationInput.Build(formatting, level + 2, indentationSize);
-
             if (value is bool @bool)
                 return @bool ? "true" : "false";
+
+            if (value is IGraphQlInputObject inputObject)
+                return BuildInputObject(inputObject, formatting, level + 2, indentationSize);
 
             var argumentValue = Convert.ToString(value, CultureInfo.InvariantCulture);
             if (value is String || value is Guid)
@@ -68,6 +68,44 @@ namespace Tibber.Sdk
             return argumentValue;
         }
 
+        public static string BuildInputObject(IGraphQlInputObject inputObject, Formatting formatting, int level, byte indentationSize)
+        {
+            var builder = new StringBuilder();
+            builder.Append("{");
+
+            var isIndentedFormatting = formatting == Formatting.Indented;
+            string valueSeparator;
+            if (isIndentedFormatting)
+            {
+                builder.AppendLine();
+                valueSeparator = ": ";
+            }
+            else
+                valueSeparator = ":";
+
+            var separator = String.Empty;
+            foreach (var propertyValue in inputObject.GetPropertyValues().Where(p => p.Value != null))
+            {
+                var value = BuildArgumentValue(propertyValue.Value, formatting, level, indentationSize);
+                builder.Append(isIndentedFormatting ? GetIndentation(level, indentationSize) : separator);
+                builder.Append(propertyValue.Name);
+                builder.Append(valueSeparator);
+                builder.Append(value);
+
+                separator = ",";
+
+                if (isIndentedFormatting)
+                    builder.AppendLine();
+            }
+
+            if (isIndentedFormatting)
+                builder.Append(GetIndentation(level - 1, indentationSize));
+
+            builder.Append("}");
+
+            return builder.ToString();
+        }
+
         private static string ConvertEnumToString(Enum @enum)
         {
             var enumMember = @enum.GetType().GetTypeInfo().GetField(@enum.ToString());
@@ -88,47 +126,9 @@ namespace Tibber.Sdk
         public object Value { get; set; }
     }
 
-    public abstract class GraphQlMutationInput
+    internal interface IGraphQlInputObject
     {
-        internal string Build(Formatting formatting, int level, byte indentationSize)
-        {
-            var builder = new StringBuilder();
-            builder.Append("{");
-
-            var isIndentedFormatting = formatting == Formatting.Indented;
-            string valueSeparator;
-            if (isIndentedFormatting)
-            {
-                builder.AppendLine();
-                valueSeparator = ": ";
-            }
-            else
-                valueSeparator = ":";
-
-            var separator = String.Empty;
-            foreach (var propertyValue in GetPropertyValues().Where(p => p.Value != null))
-            {
-                var value = GraphQlQueryHelper.BuildArgumentValue(propertyValue.Value, formatting, level, indentationSize);
-                builder.Append(isIndentedFormatting ? GraphQlQueryHelper.GetIndentation(level, indentationSize) : separator);
-                builder.Append(propertyValue.Name);
-                builder.Append(valueSeparator);
-                builder.Append(value);
-
-                separator = ",";
-
-                if (isIndentedFormatting)
-                    builder.AppendLine();
-            }
-
-            if (isIndentedFormatting)
-                builder.Append(GraphQlQueryHelper.GetIndentation(level - 1, indentationSize));
-
-            builder.Append("}");
-
-            return builder.ToString();
-        }
-
-        protected abstract IEnumerable<InputPropertyInfo> GetPropertyValues();
+        IEnumerable<InputPropertyInfo> GetPropertyValues();
     }
 
     public abstract class GraphQlQueryBuilder
@@ -984,6 +984,78 @@ namespace Tibber.Sdk
     }
     #endregion
 
+    #region input classes
+    public class MeterReadingInput : IGraphQlInputObject
+    {
+        public Guid? HomeId { get; set; }
+        public string Time { get; set; }
+        public int? Reading { get; set; }
+
+        IEnumerable<InputPropertyInfo> IGraphQlInputObject.GetPropertyValues()
+        {
+            yield return new InputPropertyInfo { Name = "homeId", Value = HomeId };
+            yield return new InputPropertyInfo { Name = "time", Value = Time };
+            yield return new InputPropertyInfo { Name = "reading", Value = Reading };
+        }
+    }
+
+    public class UpdateHomeInput : IGraphQlInputObject
+    {
+        public Guid? HomeId { get; set; }
+        public string AppNickname { get; set; }
+        /// <summary>
+        /// The chosen avatar for the home
+        /// </summary>
+        public HomeAvatar? AppAvatar { get; set; }
+        /// <summary>
+        /// The size of the home in square meters
+        /// </summary>
+        public int? Size { get; set; }
+        /// <summary>
+        /// The type of home.
+        /// </summary>
+        public HomeType? Type { get; set; }
+        /// <summary>
+        /// The number of people living in the home
+        /// </summary>
+        public int? NumberOfResidents { get; set; }
+        /// <summary>
+        /// The primary form of heating in the household
+        /// </summary>
+        public HeatingSource? PrimaryHeatingSource { get; set; }
+        /// <summary>
+        /// Whether the home has a ventilation system
+        /// </summary>
+        public bool? HasVentilationSystem { get; set; }
+
+        IEnumerable<InputPropertyInfo> IGraphQlInputObject.GetPropertyValues()
+        {
+            yield return new InputPropertyInfo { Name = "homeId", Value = HomeId };
+            yield return new InputPropertyInfo { Name = "appNickname", Value = AppNickname };
+            yield return new InputPropertyInfo { Name = "appAvatar", Value = AppAvatar };
+            yield return new InputPropertyInfo { Name = "size", Value = Size };
+            yield return new InputPropertyInfo { Name = "type", Value = Type };
+            yield return new InputPropertyInfo { Name = "numberOfResidents", Value = NumberOfResidents };
+            yield return new InputPropertyInfo { Name = "primaryHeatingSource", Value = PrimaryHeatingSource };
+            yield return new InputPropertyInfo { Name = "hasVentilationSystem", Value = HasVentilationSystem };
+        }
+    }
+
+    public class PushNotificationInput : IGraphQlInputObject
+    {
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public AppScreen? ScreenToOpen { get; set; }
+
+        IEnumerable<InputPropertyInfo> IGraphQlInputObject.GetPropertyValues()
+        {
+            yield return new InputPropertyInfo { Name = "title", Value = Title };
+            yield return new InputPropertyInfo { Name = "message", Value = Message };
+            yield return new InputPropertyInfo { Name = "screenToOpen", Value = ScreenToOpen };
+        }
+    }
+    #endregion
+
     #region data classes
     public class Query
     {
@@ -1386,78 +1458,6 @@ namespace Tibber.Sdk
     {
         public bool? Successful { get; set; }
         public int? PushedToNumberOfDevices { get; set; }
-    }
-    #endregion
-
-    #region input classes
-    public class MeterReadingInput : GraphQlMutationInput
-    {
-        public Guid? HomeId { get; set; }
-        public string Time { get; set; }
-        public int? Reading { get; set; }
-
-        protected override IEnumerable<InputPropertyInfo> GetPropertyValues()
-        {
-            yield return new InputPropertyInfo { Name = "homeId", Value = HomeId };
-            yield return new InputPropertyInfo { Name = "time", Value = Time };
-            yield return new InputPropertyInfo { Name = "reading", Value = Reading };
-        }
-    }
-
-    public class UpdateHomeInput : GraphQlMutationInput
-    {
-        public Guid? HomeId { get; set; }
-        public string AppNickname { get; set; }
-        /// <summary>
-        /// The chosen avatar for the home
-        /// </summary>
-        public HomeAvatar? AppAvatar { get; set; }
-        /// <summary>
-        /// The size of the home in square meters
-        /// </summary>
-        public int? Size { get; set; }
-        /// <summary>
-        /// The type of home.
-        /// </summary>
-        public HomeType? Type { get; set; }
-        /// <summary>
-        /// The number of people living in the home
-        /// </summary>
-        public int? NumberOfResidents { get; set; }
-        /// <summary>
-        /// The primary form of heating in the household
-        /// </summary>
-        public HeatingSource? PrimaryHeatingSource { get; set; }
-        /// <summary>
-        /// Whether the home has a ventilation system
-        /// </summary>
-        public bool? HasVentilationSystem { get; set; }
-
-        protected override IEnumerable<InputPropertyInfo> GetPropertyValues()
-        {
-            yield return new InputPropertyInfo { Name = "homeId", Value = HomeId };
-            yield return new InputPropertyInfo { Name = "appNickname", Value = AppNickname };
-            yield return new InputPropertyInfo { Name = "appAvatar", Value = AppAvatar };
-            yield return new InputPropertyInfo { Name = "size", Value = Size };
-            yield return new InputPropertyInfo { Name = "type", Value = Type };
-            yield return new InputPropertyInfo { Name = "numberOfResidents", Value = NumberOfResidents };
-            yield return new InputPropertyInfo { Name = "primaryHeatingSource", Value = PrimaryHeatingSource };
-            yield return new InputPropertyInfo { Name = "hasVentilationSystem", Value = HasVentilationSystem };
-        }
-    }
-
-    public class PushNotificationInput : GraphQlMutationInput
-    {
-        public string Title { get; set; }
-        public string Message { get; set; }
-        public AppScreen? ScreenToOpen { get; set; }
-
-        protected override IEnumerable<InputPropertyInfo> GetPropertyValues()
-        {
-            yield return new InputPropertyInfo { Name = "title", Value = Title };
-            yield return new InputPropertyInfo { Name = "message", Value = Message };
-            yield return new InputPropertyInfo { Name = "screenToOpen", Value = ScreenToOpen };
-        }
     }
     #endregion
 }
