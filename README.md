@@ -17,11 +17,11 @@ You must have Tibber account to access our API. Access token can be generated at
 
 Usage
 -------------
-```
+```csharp
 using Tibber.Sdk;
 ```
 
-```
+```csharp
 var client = new TibberApiClient(accessToken);
 
 var basicData = await client.GetBasicData();
@@ -60,7 +60,7 @@ Extension methods
 -------------
 It's good practice to define custom queries as extension methods, either of root `TibberQueryBuilder` or any child subquery builder. It helps to reduce code redundancy.
 Example:
-```
+```csharp
 public static class QueryBuilderExtensions
 {
     /// <summary>
@@ -96,7 +96,7 @@ public static class QueryBuilderExtensions
 }
 ```
 Usage:
-```
+```csharp
 var query = new TibberQueryBuilder().WithHomeConsumption(homeId, ConsumptionResolution.Monthly, 12).Build();
 await client.Query(query);
 ```
@@ -106,7 +106,7 @@ Real-time measurement usage
 You must have active Tibber Pulse or Watty device at your home to access real-time measurements. `basicData.Data.Viewer.Home.Features.RealTimeConsumptionEnabled` must return `true`.
 
 Sample observer implementation:
-```
+```csharp
 public class LiveMeasurementObserver : IObserver<LiveMeasurement>
 {
     public void OnCompleted() => Console.WriteLine("Live measurement stream has been terminated. ");
@@ -117,7 +117,7 @@ public class LiveMeasurementObserver : IObserver<LiveMeasurement>
 ```
 
 Listener initialization:
-```
+```csharp
 var client = new TibberApiClient(accessToken);
 var homeId = Guid.Parse("c70dcbe5-4485-4821-933d-a8a86452737b");
 var listener = await client.StartLiveMeasurementListener(homeId);
