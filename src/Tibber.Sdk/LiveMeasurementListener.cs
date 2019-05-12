@@ -163,7 +163,10 @@ namespace Tibber.Sdk
                 $@"{{""payload"":{{""query"":""subscription{{liveMeasurement(homeId:\""{homeId}\""){{timestamp,power,powerProduction,accumulatedConsumption,accumulatedProduction,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,minPowerProduction,maxPowerProduction,voltagePhase1,voltagePhase2,voltagePhase3,currentPhase1,currentPhase2,currentPhase3,lastMeterConsumption,lastMeterProduction}}}}"",""variables"":{{}},""extensions"":{{}},""operationName"":null}},""type"":""start"",""id"":{subscriptionId}}}",
                 cancellationToken);
 
-            await _semaphore.WaitAsync(cancellationToken);
+            if (cancellationToken == default)
+                await _semaphore.WaitAsync(30000);
+            else
+                await _semaphore.WaitAsync(cancellationToken);
         }
 
         private Task UnsubscribeStream(int subscriptionId, CancellationToken cancellationToken) =>
