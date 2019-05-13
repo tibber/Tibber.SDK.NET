@@ -34,7 +34,7 @@ namespace Tibber.Sdk
 
         private static readonly JsonSerializer Serializer = JsonSerializer.Create(JsonSerializerSettings);
 
-        private readonly LiveMeasurementListener _liveMeasurementListener;
+        private readonly RealTimeMeasurementListener _realTimeMeasurementListener;
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
@@ -60,12 +60,12 @@ namespace Tibber.Sdk
                     }
                 };
 
-            _liveMeasurementListener = new LiveMeasurementListener(accessToken);
+            _realTimeMeasurementListener = new RealTimeMeasurementListener(accessToken);
         }
 
         public void Dispose()
         {
-            _liveMeasurementListener.Dispose();
+            _realTimeMeasurementListener.Dispose();
             _httpClient.Dispose();
         }
 
@@ -119,19 +119,19 @@ namespace Tibber.Sdk
             Request<TibberApiMutationResult>(mutation, cancellationToken);
 
         /// <summary>
-        /// Starts live measurement listener. You must have active Tibber Pulse device to get any values.
+        /// Starts real-time measurement listener. You must have active Tibber Pulse device to get any values.
         /// </summary>
         /// <param name="homeId"></param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
-        public async Task<IObservable<LiveMeasurement>> StartLiveMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
+        public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
         {
             await Semaphore.WaitAsync(cancellationToken);
 
             try
             {
-                return await _liveMeasurementListener.SubscribeHome(homeId, cancellationToken);
+                return await _realTimeMeasurementListener.SubscribeHome(homeId, cancellationToken);
             }
             finally
             {
@@ -140,16 +140,16 @@ namespace Tibber.Sdk
         }
 
         /// <summary>
-        /// Stops live measurement listener.
+        /// Stops real-time measurement listener.
         /// </summary>
         /// <param name="homeId"></param>
-        public async Task StopLiveMeasurementListener(Guid homeId)
+        public async Task StopRealTimeMeasurementListener(Guid homeId)
         {
             await Semaphore.WaitAsync();
 
             try
             {
-                await _liveMeasurementListener.UnsubscribeHome(homeId, CancellationToken.None);
+                await _realTimeMeasurementListener.UnsubscribeHome(homeId, CancellationToken.None);
             }
             finally
             {

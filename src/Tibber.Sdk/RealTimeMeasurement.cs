@@ -2,7 +2,7 @@
 
 namespace Tibber.Sdk
 {
-    public class LiveMeasurement
+    public class RealTimeMeasurement
     {
         /// <summary>
         /// Timestamp when usage occured

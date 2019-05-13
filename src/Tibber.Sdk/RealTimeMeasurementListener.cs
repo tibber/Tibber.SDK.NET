@@ -10,16 +10,16 @@ using Newtonsoft.Json;
 
 namespace Tibber.Sdk
 {
-    internal class HomeLiveMeasurementObservable : IObservable<LiveMeasurement>
+    internal class HomeRealTimeMeasurementObservable : IObservable<RealTimeMeasurement>
     {
-        private readonly LiveMeasurementListener _listener;
+        private readonly RealTimeMeasurementListener _listener;
 
         public Guid HomeId { get; }
         public int SubscriptionId { get; }
         public bool IsInitialized { get; private set; }
         public string ErrorMessage { get; private set; }
 
-        public HomeLiveMeasurementObservable(LiveMeasurementListener listener, Guid homeId, int subscriptionId)
+        public HomeRealTimeMeasurementObservable(RealTimeMeasurementListener listener, Guid homeId, int subscriptionId)
         {
             _listener = listener;
             HomeId = homeId;
@@ -32,7 +32,7 @@ namespace Tibber.Sdk
         /// <param name="observer"></param>
         /// <exception cref="T:System.ArgumentException"></exception>
         /// <returns></returns>
-        public IDisposable Subscribe(IObserver<LiveMeasurement> observer) => _listener.SubscribeObserver(this, observer);
+        public IDisposable Subscribe(IObserver<RealTimeMeasurement> observer) => _listener.SubscribeObserver(this, observer);
 
         public void Initialize() => IsInitialized = true;
 
@@ -49,7 +49,7 @@ namespace Tibber.Sdk
         }
     }
 
-    internal class LiveMeasurementListener : IDisposable
+    internal class RealTimeMeasurementListener : IDisposable
     {
         private readonly Dictionary<Guid, HomeStreamObserverCollection> _homeObservables = new Dictionary<Guid, HomeStreamObserverCollection>();
         private readonly ArraySegment<byte> _receiveBuffer = new ArraySegment<byte>(new byte[16384]);
@@ -63,18 +63,18 @@ namespace Tibber.Sdk
         private bool _isDisposed;
         private int _streamId;
 
-        public LiveMeasurementListener(string accessToken)
+        public RealTimeMeasurementListener(string accessToken)
         {
             _accessToken = accessToken;
         }
 
-        public async Task<IObservable<LiveMeasurement>> SubscribeHome(Guid homeId, CancellationToken cancellationToken)
+        public async Task<IObservable<RealTimeMeasurement>> SubscribeHome(Guid homeId, CancellationToken cancellationToken)
         {
             CheckObjectNotDisposed();
 
             int subscriptionId;
             bool shouldInitialize;
-            HomeLiveMeasurementObservable observable;
+            HomeRealTimeMeasurementObservable observable;
             lock (_homeObservables)
             {
                 shouldInitialize = !_homeObservables.Any();
@@ -85,7 +85,7 @@ namespace Tibber.Sdk
                 subscriptionId = Interlocked.Increment(ref _streamId);
                 _homeObservables.Add(
                     homeId,
-                    collection = new HomeStreamObserverCollection { Observable = new HomeLiveMeasurementObservable(this, homeId, subscriptionId) });
+                    collection = new HomeStreamObserverCollection { Observable = new HomeRealTimeMeasurementObservable(this, homeId, subscriptionId) });
 
                 observable = collection.Observable;
             }
@@ -101,7 +101,7 @@ namespace Tibber.Sdk
                 await SubscribeStream(homeId, subscriptionId, cancellationToken);
 
                 if (!observable.IsInitialized)
-                    throw new InvalidOperationException($"live measurement subscription initialization failed{(observable.ErrorMessage == null ? null : $": {observable.ErrorMessage}")}");
+                    throw new InvalidOperationException($"real-time measurement subscription initialization failed{(observable.ErrorMessage == null ? null : $": {observable.ErrorMessage}")}");
             }
             catch
             {
@@ -118,7 +118,7 @@ namespace Tibber.Sdk
         {
             CheckObjectNotDisposed();
 
-            HomeLiveMeasurementObservable observable;
+            HomeRealTimeMeasurementObservable observable;
 
             lock (_homeObservables)
             {
@@ -135,7 +135,7 @@ namespace Tibber.Sdk
             await UnsubscribeStream(observable.SubscriptionId, cancellationToken);
         }
 
-        public IDisposable SubscribeObserver(HomeLiveMeasurementObservable observable, IObserver<LiveMeasurement> observer)
+        public IDisposable SubscribeObserver(HomeRealTimeMeasurementObservable observable, IObserver<RealTimeMeasurement> observer)
         {
             lock (_homeObservables)
             {
@@ -151,7 +151,7 @@ namespace Tibber.Sdk
             }
         }
 
-        private void UnsubscribeObserver(HomeStreamObserverCollection collection, IObserver<LiveMeasurement> observer)
+        private void UnsubscribeObserver(HomeStreamObserverCollection collection, IObserver<RealTimeMeasurement> observer)
         {
             lock (_homeObservables)
                 collection.Observers.Remove(observer);
@@ -286,7 +286,7 @@ namespace Tibber.Sdk
                                     _semaphore.Release();
                                 }
 
-                                var measurement = message.Payload?.Data?.LiveMeasurement;
+                                var measurement = message.Payload?.Data?.RealTimeMeasurement;
                                 if (measurement == null)
                                     continue;
 
@@ -312,7 +312,7 @@ namespace Tibber.Sdk
 
         public void Dispose()
         {
-            ICollection<IObserver<LiveMeasurement>> observers;
+            ICollection<IObserver<RealTimeMeasurement>> observers;
 
             lock (_homeObservables)
             {
@@ -337,10 +337,10 @@ namespace Tibber.Sdk
         private void CheckObjectNotDisposed()
         {
             if (_isDisposed)
-                throw new ObjectDisposedException(nameof(LiveMeasurementListener));
+                throw new ObjectDisposedException(nameof(RealTimeMeasurementListener));
         }
 
-        private static void ExecuteObserverAction(IEnumerable<IObserver<LiveMeasurement>> observers, Action<IObserver<LiveMeasurement>> observerAction)
+        private static void ExecuteObserverAction(IEnumerable<IObserver<RealTimeMeasurement>> observers, Action<IObserver<RealTimeMeasurement>> observerAction)
         {
             foreach (var observer in observers)
                 try
@@ -401,13 +401,14 @@ namespace Tibber.Sdk
 
         private class WebSocketData
         {
-            public LiveMeasurement LiveMeasurement { get; set; }
+            [JsonProperty("liveMeasurement")]
+            public RealTimeMeasurement RealTimeMeasurement { get; set; }
         }
 
         private class HomeStreamObserverCollection
         {
-            public HomeLiveMeasurementObservable Observable;
-            public readonly List<IObserver<LiveMeasurement>> Observers = new List<IObserver<LiveMeasurement>>();
+            public HomeRealTimeMeasurementObservable Observable;
+            public readonly List<IObserver<RealTimeMeasurement>> Observers = new List<IObserver<RealTimeMeasurement>>();
         }
 
         private class Unsubscriber : IDisposable

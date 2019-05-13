@@ -107,11 +107,11 @@ You must have active Tibber Pulse or Watty device at your home to access real-ti
 
 Sample observer implementation:
 ```csharp
-public class LiveMeasurementObserver : IObserver<LiveMeasurement>
+public class RealTimeMeasurementObserver : IObserver<RealTimeMeasurement>
 {
-    public void OnCompleted() => Console.WriteLine("Live measurement stream has been terminated. ");
+    public void OnCompleted() => Console.WriteLine("Real time measurement stream has been terminated. ");
     public void OnError(Exception error) => Console.WriteLine($"An error occured: {error}");
-    public void OnNext(LiveMeasurement value) =>
+    public void OnNext(RealTimeMeasurement value) =>
         Console.WriteLine($"{value.Timestamp} - power: {value.Power:N0} W (average: {value.AveragePower:N0} W); consumption since last midnight: {value.AccumulatedConsumption:N3} kWh; cost since last midnight: {value.AccumulatedCost:N2} {value.Currency}");
 }
 ```
@@ -120,8 +120,8 @@ Listener initialization:
 ```csharp
 var client = new TibberApiClient(accessToken);
 var homeId = Guid.Parse("c70dcbe5-4485-4821-933d-a8a86452737b");
-var listener = await client.StartLiveMeasurementListener(homeId);
-listener.Subscribe(new LiveMeasurementObserver());
+var listener = await client.StartRealTimeMeasurementListener(homeId);
+listener.Subscribe(new RealTimeMeasurementObserver());
 ```
 
 Sample output:
