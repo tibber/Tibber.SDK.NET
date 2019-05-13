@@ -5,10 +5,10 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.1.0-beta-7</Version>
+    <Version>0.1.0-beta-8</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright 2017</Copyright>
+    <Copyright>Copyright 2017-2019</Copyright>
     <Title>Tibber SDK.NET</Title>
     <PackageLicenseUrl>https://raw.githubusercontent.com/tibbercom/Tibber.SDK.NET/master/License.md</PackageLicenseUrl>
     <PackageProjectUrl>https://developer.tibber.com/</PackageProjectUrl>
@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
-    <PackageReleaseNotes>new web socket subscription model with shared client</PackageReleaseNotes>
+    <PackageReleaseNotes>harmonize naming</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
