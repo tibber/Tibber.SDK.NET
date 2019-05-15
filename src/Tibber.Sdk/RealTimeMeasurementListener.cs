@@ -330,6 +330,7 @@ namespace Tibber.Sdk
 
             ExecuteObserverAction(observers, o => o.OnCompleted());
 
+            _wssClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "closed by client", CancellationToken.None).GetAwaiter().GetResult();
             _wssClient.Dispose();
             _cancellationTokenSource.Dispose();
         }
