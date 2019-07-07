@@ -15,7 +15,7 @@
     <PackageIconUrl>https://lh3.googleusercontent.com/EMPZKxEewbjzlAKuj5tbKxH7ah-XxVaEKs667J143Nk2NhzcspAC9ybQFmA8coAg_w=w300</PackageIconUrl>
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
+    <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
     <PackageReleaseNotes>added home production query</PackageReleaseNotes>
   </PropertyGroup>
 
