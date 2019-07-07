@@ -23,7 +23,7 @@ namespace Tibber.Sdk
     {
         private const int MaximumBodyLength = 131071;
 
-        public bool IsHttpException { get; }
+        public bool IsHttpException => StatusCode.HasValue;
         public HttpStatusCode? StatusCode { get; }
         public HttpMethod HttpMethod { get; }
         public TimeSpan RequestDuration { get; }
@@ -47,7 +47,6 @@ namespace Tibber.Sdk
             string message)
             : base(message)
         {
-            IsHttpException = true;
             Uri = uri;
             HttpMethod = httpMethod;
             StatusCode = statusCode;

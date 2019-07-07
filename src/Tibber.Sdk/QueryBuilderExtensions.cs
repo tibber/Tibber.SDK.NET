@@ -39,7 +39,7 @@ namespace Tibber.Sdk
         /// <param name="resolution"></param>
         /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
         /// <returns></returns>
-        public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, ConsumptionResolution resolution, int? lastEntries) =>
+        public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, EnergyResolution resolution, int? lastEntries) =>
             builder.WithViewer(
                     new ViewerQueryBuilder()
                         .WithHome(
@@ -49,27 +49,57 @@ namespace Tibber.Sdk
                 );
 
         /// <summary>
+        /// Builds a query for home production.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="homeId"></param>
+        /// <param name="resolution"></param>
+        /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
+        /// <returns></returns>
+        public static TibberQueryBuilder WithHomeProduction(this TibberQueryBuilder builder, Guid homeId, EnergyResolution resolution, int? lastEntries) =>
+            builder.WithViewer(
+                new ViewerQueryBuilder()
+                    .WithHome(
+                        new HomeQueryBuilder().WithHomeProduction(resolution, lastEntries ?? LastConsumptionEntries(resolution)),
+                        homeId
+                    )
+            );
+
+        /// <summary>
         /// Builds a query for home consumption.
         /// </summary>
         /// <param name="homeQueryBuilder"></param>
         /// <param name="resolution"></param>
         /// <param name="lastEntries">how many last entries to fetch</param>
         /// <returns></returns>
-        public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, ConsumptionResolution resolution, int lastEntries) =>
+        public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
             homeQueryBuilder.WithConsumption(
                 new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionQueryBuilder().WithAllFields()),
                 resolution,
                 last: lastEntries);
 
-        private static int LastConsumptionEntries(ConsumptionResolution resolution)
+        /// <summary>
+        /// Builds a query for home production.
+        /// </summary>
+        /// <param name="homeQueryBuilder"></param>
+        /// <param name="resolution"></param>
+        /// <param name="lastEntries">how many last entries to fetch</param>
+        /// <returns></returns>
+        public static HomeQueryBuilder WithHomeProduction(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
+            homeQueryBuilder.WithProduction(
+                new HomeProductionConnectionQueryBuilder().WithNodes(new ProductionQueryBuilder().WithAllFields()),
+                resolution,
+                last: lastEntries);
+
+        private static int LastConsumptionEntries(EnergyResolution resolution)
         {
             switch (resolution)
             {
-                case ConsumptionResolution.Annual: return 1;
-                case ConsumptionResolution.Daily: return 30;
-                case ConsumptionResolution.Hourly: return 24;
-                case ConsumptionResolution.Monthly: return 12;
-                case ConsumptionResolution.Weekly: return 4;
+                case EnergyResolution.Annual: return 1;
+                case EnergyResolution.Daily: return 30;
+                case EnergyResolution.Hourly: return 24;
+                case EnergyResolution.Monthly: return 12;
+                case EnergyResolution.Weekly: return 4;
                 default: throw new NotSupportedException($"{resolution} resolution not supported");
             }
         }

@@ -91,11 +91,27 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>consumption entries</returns>
-        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, ConsumptionResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken);
             ValidateResult(result);
             return result.Data?.Viewer?.Home?.Consumption?.Nodes;
+        }
+
+        /// <summary>
+        /// Gets home consumption.
+        /// </summary>
+        /// <param name="homeId"></param>
+        /// <param name="resolution"></param>
+        /// <param name="lastEntries">how many last entries to fetch; if no value provider a default will be used - hourly: 24; daily: 30; weekly: 4; monthly: 12; annually: 1</param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns>consumption entries</returns>
+        public async Task<ICollection<ProductionEntry>> GetHomeProduction(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomeProduction(homeId, resolution, lastEntries).Build(), cancellationToken);
+            ValidateResult(result);
+            return result.Data?.Viewer?.Home?.Production?.Nodes;
         }
 
         /// <summary>

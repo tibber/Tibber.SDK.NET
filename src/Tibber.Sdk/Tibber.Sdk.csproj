@@ -5,7 +5,7 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.1.0-beta-8</Version>
+    <Version>0.1.0-beta-9</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright 2017-2019</Copyright>
@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphGL .NET SDK</PackageTags>
-    <PackageReleaseNotes>harmonize naming</PackageReleaseNotes>
+    <PackageReleaseNotes>added home production query</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

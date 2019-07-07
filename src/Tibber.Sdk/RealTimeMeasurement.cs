@@ -88,5 +88,10 @@ namespace Tibber.Sdk
         /// Current (A) on phase 3; on Kaifa and Aidon meters the value is not part of every HAN data frame therefore the value is null at timestamps with second value other than 0, 10, 20, 30, 40, 50. There can be other deviations based on concrete meter firmware. Value is always null for single phase meters.
         /// </summary>
         public decimal? CurrentPhase3 { get; set; }
+
+        /// <summary>
+        /// Power factor (active power / apparent power)
+        /// </summary>
+        public decimal? PowerFactor { get; set; }
     }
 }
