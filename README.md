@@ -26,7 +26,7 @@ var client = new TibberApiClient(accessToken);
 
 var basicData = await client.GetBasicData();
 var homeId = basicData.Data.Viewer.Homes.First().Id.Value;
-var consumption = await client.GetHomeConsumption(homeId, ConsumptionResolution.Monthly);
+var consumption = await client.GetHomeConsumption(homeId, EnergyResolution.Monthly);
 
 var customQueryBuilder =
     new TibberQueryBuilder()
@@ -71,7 +71,7 @@ public static class QueryBuilderExtensions
     /// <param name="resolution"></param>
     /// <param name="lastEntries">how many last entries to fetch</param>
     /// <returns></returns>
-    public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, ConsumptionResolution resolution, int lastEntries) =>
+    public static TibberQueryBuilder WithHomeConsumption(this TibberQueryBuilder builder, Guid homeId, EnergyResolution resolution, int lastEntries) =>
         builder.WithAllScalarFields()
             .WithViewer(
                 new ViewerQueryBuilder()
@@ -88,7 +88,7 @@ public static class QueryBuilderExtensions
     /// <param name="resolution"></param>
     /// <param name="lastEntries">how many last entries to fetch</param>
     /// <returns></returns>
-    public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, ConsumptionResolution resolution, int lastEntries) =>
+    public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
         homeQueryBuilder.WithConsumption(
             new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionQueryBuilder().WithAllFields()),
             resolution,
@@ -97,7 +97,7 @@ public static class QueryBuilderExtensions
 ```
 Usage:
 ```csharp
-var query = new TibberQueryBuilder().WithHomeConsumption(homeId, ConsumptionResolution.Monthly, 12).Build();
+var query = new TibberQueryBuilder().WithHomeConsumption(homeId, EnergyResolution.Monthly, 12).Build();
 await client.Query(query);
 ```
 
