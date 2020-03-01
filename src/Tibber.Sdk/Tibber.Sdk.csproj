@@ -5,18 +5,19 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.1.0-beta-9</Version>
+    <Version>0.1.0-beta-10</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright 2017-2019</Copyright>
+    <Copyright>Copyright 2017-2020</Copyright>
     <Title>Tibber SDK.NET</Title>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/tibbercom/Tibber.SDK.NET/master/License.md</PackageLicenseUrl>
+    <PackageLicenseFile>License.md</PackageLicenseFile>
+    <PackageLicense>https://raw.githubusercontent.com/tibbercom/Tibber.SDK.NET/master/License.md</PackageLicense>
     <PackageProjectUrl>https://developer.tibber.com/</PackageProjectUrl>
-    <PackageIconUrl>https://lh3.googleusercontent.com/EMPZKxEewbjzlAKuj5tbKxH7ah-XxVaEKs667J143Nk2NhzcspAC9ybQFmA8coAg_w=w300</PackageIconUrl>
+    <PackageIcon>TibberLogo.png</PackageIcon>
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
-    <PackageReleaseNotes>added home production query</PackageReleaseNotes>
+    <PackageReleaseNotes>added Pulse/Watty signal strength</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -29,6 +30,17 @@
 
   <ItemGroup Condition = "'$(TargetFramework)' == 'net45'">
     <PackageReference Include="System.Net.Http" Version="4.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\TibberLogo.png">
+      <Pack>True</Pack>
+      <PackagePath />
+    </None>
+    <None Include="..\..\License.md">
+      <Pack>True</Pack>
+      <PackagePath />
+    </None>
   </ItemGroup>
 
 </Project>

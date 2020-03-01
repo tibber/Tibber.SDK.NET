@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Tibber.Sdk
 {
@@ -79,19 +80,25 @@ namespace Tibber.Sdk
         /// <summary>
         /// Current (A) on phase 1; on Kaifa and Aidon meters the value is not part of every HAN data frame therefore the value is null at timestamps with second value other than 0, 10, 20, 30, 40, 50. There can be other deviations based on concrete meter firmware.
         /// </summary>
+        [JsonProperty("CurrentL1")]
         public decimal? CurrentPhase1 { get; set; }
         /// <summary>
         /// Current (A) on phase 2; on Kaifa and Aidon meters the value is not part of every HAN data frame therefore the value is null at timestamps with second value other than 0, 10, 20, 30, 40, 50. There can be other deviations based on concrete meter firmware. Value is always null for single phase meters.
         /// </summary>
+        [JsonProperty("CurrentL2")]
         public decimal? CurrentPhase2 { get; set; }
         /// <summary>
         /// Current (A) on phase 3; on Kaifa and Aidon meters the value is not part of every HAN data frame therefore the value is null at timestamps with second value other than 0, 10, 20, 30, 40, 50. There can be other deviations based on concrete meter firmware. Value is always null for single phase meters.
         /// </summary>
+        [JsonProperty("CurrentL3")]
         public decimal? CurrentPhase3 { get; set; }
-
         /// <summary>
         /// Power factor (active power / apparent power)
         /// </summary>
         public decimal? PowerFactor { get; set; }
+        /// <summary>
+        /// Device signal strength (Pulse - dB; Watty - percent)
+        /// </summary>
+        public int? SignalStrength { get; set; }
     }
 }
