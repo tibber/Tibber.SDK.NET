@@ -5,7 +5,7 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.1.0-beta-10</Version>
+    <Version>0.2.0-beta</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright 2017-2020</Copyright>
