@@ -5,7 +5,7 @@
     <Description>Package for accessing Tibber API using .NET</Description>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.2.0-beta</Version>
+    <Version>0.2.1-beta</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Copyright>Copyright 2017-2020</Copyright>
@@ -17,7 +17,7 @@
     <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
-    <PackageReleaseNotes>added Pulse/Watty signal strength</PackageReleaseNotes>
+    <PackageReleaseNotes>re-subscribe streams if no data received for approximately one minute</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

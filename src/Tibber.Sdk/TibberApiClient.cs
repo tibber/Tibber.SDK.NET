@@ -46,7 +46,7 @@ namespace Tibber.Sdk
 
             _accessToken = accessToken;
 
-            messageHandler = messageHandler ?? new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            messageHandler ??= new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
 
             _httpClient =
                 new HttpClient(messageHandler)
@@ -193,10 +193,10 @@ namespace Tibber.Sdk
             if (!response.IsSuccessStatusCode)
                 throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
 
-            using (var stream = await response.Content.ReadAsStreamAsync())
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
-                return Serializer.Deserialize<TResult>(jsonReader);
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var streamReader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(streamReader);
+            return Serializer.Deserialize<TResult>(jsonReader);
         }
 
         private static HttpContent JsonContent(object data) =>
