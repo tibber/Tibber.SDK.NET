@@ -8,7 +8,7 @@ Installation
 -------------
 Using nuget package manager:
 ```
-Install-Package Tibber.Sdk -Version 0.2.1-beta
+Install-Package Tibber.Sdk -Version 0.2.2-beta
 ```
 
 Authorization
