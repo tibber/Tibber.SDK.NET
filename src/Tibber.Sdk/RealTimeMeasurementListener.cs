@@ -66,7 +66,6 @@ namespace Tibber.Sdk
         private bool _isInitialized;
         private bool _isDisposed;
         private int _streamId;
-        private DateTimeOffset _lastMessageReceivedAt = DateTimeOffset.MaxValue;
 
         public RealTimeMeasurementListener(string accessToken)
         {
@@ -232,8 +231,6 @@ namespace Tibber.Sdk
                     do
                     {
                         result = await _wssClient.ReceiveAsync(_receiveBuffer, _cancellationTokenSource.Token);
-                        _lastMessageReceivedAt = DateTimeOffset.UtcNow;
-
                         var json = Encoding.ASCII.GetString(_receiveBuffer.Array, 0, result.Count);
                         stringBuilder.Append(json);
                     } while (!result.EndOfMessage);
@@ -250,7 +247,10 @@ namespace Tibber.Sdk
                     lock (_homeObservables)
                     {
                         foreach (var homeStreamObservableCollection in _homeObservables.Values)
+                        {
+                            homeStreamObservableCollection.LastMessageReceivedAt = DateTimeOffset.MaxValue;
                             ExecuteObserverAction(homeStreamObservableCollection.Observers.ToArray(), o => o.OnError(exception));
+                        }
                     }
 
                     if (exception.InnerException is IOException)
@@ -261,8 +261,8 @@ namespace Tibber.Sdk
 
                             if (!_cancellationTokenSource.IsCancellationRequested)
                             {
-                                Trace.WriteLine("connection re-established");
-                                ResubscribeAllStreams();
+                                Trace.WriteLine("connection re-established; re-initialize data streams");
+                                SubscribeStreams(c => true);
                                 continue;
                             }
                         }
@@ -290,6 +290,8 @@ namespace Tibber.Sdk
 
                     if (homeStreamObserverCollection == null)
                         continue;
+
+                    homeStreamObserverCollection.LastMessageReceivedAt = DateTimeOffset.UtcNow;
 
                     foreach (var message in measurementGroup)
                     {
@@ -329,14 +331,12 @@ namespace Tibber.Sdk
             } while (!_cancellationTokenSource.IsCancellationRequested);
         }
 
-        private void ResubscribeAllStreams()
+        private void SubscribeStreams(Func<HomeStreamObserverCollection, bool> predicate)
         {
-            Trace.WriteLine("re-subscribe all streams");
-
             lock (_homeObservables)
             {
                 var subscriptionTask = (Task)Task.FromResult(0);
-                foreach (var collection in _homeObservables.Values)
+                foreach (var collection in _homeObservables.Values.Where(predicate))
                     subscriptionTask = subscriptionTask.ContinueWith(t => SubscribeStream(collection.Observable.HomeId, collection.Observable.SubscriptionId, _cancellationTokenSource.Token));
             }
         }
@@ -422,12 +422,18 @@ namespace Tibber.Sdk
 
         private void CheckDataStreamAlive(object state)
         {
-            var sinceLastMessageMs = (DateTimeOffset.UtcNow - _lastMessageReceivedAt).TotalMilliseconds;
-            if (sinceLastMessageMs <= StreamReSubscriptionCheckPeriodMs)
-                return;
+            var now = DateTimeOffset.UtcNow;
 
-            Trace.WriteLine($"no data received during last {sinceLastMessageMs:N0} ms");
-            ResubscribeAllStreams();
+            SubscribeStreams(
+                c =>
+                {
+                    var sinceLastMessageMs = (now - c.LastMessageReceivedAt).TotalMilliseconds;
+                    if (sinceLastMessageMs <= StreamReSubscriptionCheckPeriodMs)
+                        return false;
+
+                    Trace.WriteLine($"home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; re-initialize data stream");
+                    return true;
+                });
         }
 
         private static int GetDelaySeconds(int failures)
@@ -465,8 +471,9 @@ namespace Tibber.Sdk
 
         private class HomeStreamObserverCollection
         {
-            public HomeRealTimeMeasurementObservable Observable;
             public readonly List<IObserver<RealTimeMeasurement>> Observers = new List<IObserver<RealTimeMeasurement>>();
+            public HomeRealTimeMeasurementObservable Observable;
+            public DateTimeOffset LastMessageReceivedAt = DateTimeOffset.MaxValue;
         }
 
         private class Unsubscriber : IDisposable
