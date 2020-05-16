@@ -74,7 +74,7 @@ namespace Tibber.Sdk
         /// <returns></returns>
         public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
             homeQueryBuilder.WithConsumption(
-                new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionQueryBuilder().WithAllFields()),
+                new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionEntryQueryBuilder().WithAllFields()),
                 resolution,
                 last: lastEntries);
 
@@ -87,21 +87,19 @@ namespace Tibber.Sdk
         /// <returns></returns>
         public static HomeQueryBuilder WithHomeProduction(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
             homeQueryBuilder.WithProduction(
-                new HomeProductionConnectionQueryBuilder().WithNodes(new ProductionQueryBuilder().WithAllFields()),
+                new HomeProductionConnectionQueryBuilder().WithNodes(new ProductionEntryQueryBuilder().WithAllFields()),
                 resolution,
                 last: lastEntries);
 
-        private static int LastConsumptionEntries(EnergyResolution resolution)
-        {
-            switch (resolution)
+        private static int LastConsumptionEntries(EnergyResolution resolution) =>
+            resolution switch
             {
-                case EnergyResolution.Annual: return 1;
-                case EnergyResolution.Daily: return 30;
-                case EnergyResolution.Hourly: return 24;
-                case EnergyResolution.Monthly: return 12;
-                case EnergyResolution.Weekly: return 4;
-                default: throw new NotSupportedException($"{resolution} resolution not supported");
-            }
-        }
+                EnergyResolution.Annual => 1,
+                EnergyResolution.Daily => 30,
+                EnergyResolution.Hourly => 24,
+                EnergyResolution.Monthly => 12,
+                EnergyResolution.Weekly => 4,
+                _ => throw new NotSupportedException($"{resolution} resolution not supported")
+            };
     }
 }

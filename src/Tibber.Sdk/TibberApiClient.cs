@@ -219,7 +219,7 @@ namespace Tibber.Sdk
     {
     }
 
-    public class TibberApiMutationResult : GraphQlResult<RootMutation>
+    public class TibberApiMutationResult : GraphQlResult<TibberMutation>
     {
     }
 
