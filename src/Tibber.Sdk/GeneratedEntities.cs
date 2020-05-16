@@ -764,12 +764,30 @@ namespace Tibber.Sdk
         [EnumMember(Value = "OTHER")] Other
     }
 
+    /// <summary>
+    /// Price level based on trailing price average (3 days for hourly values and 30 days for daily values)
+    /// </summary>
     public enum PriceLevel
     {
+        /// <summary>
+        /// The price is greater than 90 % and smaller than 115 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "NORMAL")] Normal,
+        /// <summary>
+        /// The price is greater than 60 % and smaller or equal to 90 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "CHEAP")] Cheap,
+        /// <summary>
+        /// The price is smaller or equal to 60 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "VERY_CHEAP")] VeryCheap,
+        /// <summary>
+        /// The price is greater or equal to 115 % and smaller than 140 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "EXPENSIVE")] Expensive,
+        /// <summary>
+        /// The price is greater or equal to 140 % compared to average price.
+        /// </summary>
         [EnumMember(Value = "VERY_EXPENSIVE")] VeryExpensive
     }
 
@@ -801,10 +819,12 @@ namespace Tibber.Sdk
         [EnumMember(Value = "NOTIFICATIONS")] Notifications,
         [EnumMember(Value = "INVOICES")] Invoices
     }
-
     #endregion
 
     #region directives
+    /// <summary>
+    /// Directs the executor to skip this field or fragment when the `if` argument is true.
+    /// </summary>
     public class SkipDirective : GraphQlDirective
     {
         public SkipDirective(QueryBuilderParameter<bool> @if) : base("skip")
@@ -813,6 +833,9 @@ namespace Tibber.Sdk
         }
     }
 
+    /// <summary>
+    /// Directs the executor to include this field or fragment only when the `if` argument is true.
+    /// </summary>
     public class IncludeDirective : GraphQlDirective
     {
         public IncludeDirective(QueryBuilderParameter<bool> @if) : base("include")
@@ -820,7 +843,6 @@ namespace Tibber.Sdk
             AddArgument("if", @if);
         }
     }
-
     #endregion
 
     #region builder classes
@@ -2237,41 +2259,98 @@ namespace Tibber.Sdk
     #region data classes
     public class Tibber
     {
+        /// <summary>
+        /// This contains data about the logged-in user
+        /// </summary>
         public Viewer Viewer { get; set; }
     }
 
     public class Viewer
     {
         public string Login { get; set; }
+        /// <summary>
+        /// Unique user identifier
+        /// </summary>
         public string UserId { get; set; }
         public string Name { get; set; }
+        /// <summary>
+        /// The type of account for the logged-in user.
+        /// </summary>
         public ICollection<string> AccountType { get; set; }
+        /// <summary>
+        /// All homes visible to the logged-in user
+        /// </summary>
         public ICollection<Home> Homes { get; set; }
+        /// <summary>
+        /// Single home by its ID
+        /// </summary>
         public Home Home { get; set; }
     }
 
     public class Home
     {
         public Guid? Id { get; set; }
+        /// <summary>
+        /// The time zone the home resides in
+        /// </summary>
         public string TimeZone { get; set; }
+        /// <summary>
+        /// The nickname given to the home by the user
+        /// </summary>
         public string AppNickname { get; set; }
+        /// <summary>
+        /// The chosen avatar for the home
+        /// </summary>
         public HomeAvatar? AppAvatar { get; set; }
+        /// <summary>
+        /// The size of the home in square meters
+        /// </summary>
         public int? Size { get; set; }
+        /// <summary>
+        /// The type of home.
+        /// </summary>
         public HomeType? Type { get; set; }
+        /// <summary>
+        /// The number of people living in the home
+        /// </summary>
         public int? NumberOfResidents { get; set; }
+        /// <summary>
+        /// The primary form of heating in the household
+        /// </summary>
         public HeatingSource? PrimaryHeatingSource { get; set; }
+        /// <summary>
+        /// Whether the home has a ventilation system
+        /// </summary>
         public bool? HasVentilationSystem { get; set; }
+        /// <summary>
+        /// The main fuse size
+        /// </summary>
         public int? MainFuseSize { get; set; }
         public Address Address { get; set; }
+        /// <summary>
+        /// The registered owner of the house
+        /// </summary>
         public LegalEntity Owner { get; set; }
         public MeteringPointData MeteringPointData { get; set; }
+        /// <summary>
+        /// The current/latest subscription related to the home
+        /// </summary>
         public Subscription CurrentSubscription { get; set; }
+        /// <summary>
+        /// All historic subscriptions related to the home
+        /// </summary>
         public ICollection<Subscription> Subscriptions { get; set; }
+        /// <summary>
+        /// Consumption connection
+        /// </summary>
         public HomeConsumptionConnection Consumption { get; set; }
         public HomeProductionConnection Production { get; set; }
         public HomeFeatures Features { get; set; }
     }
 
+    /// <summary>
+    /// Address information
+    /// </summary>
     public class Address
     {
         public string Address1 { get; set; }
@@ -2287,60 +2366,162 @@ namespace Tibber.Sdk
     public class LegalEntity
     {
         public Guid? Id { get; set; }
+        /// <summary>
+        /// First/Christian name of the entity
+        /// </summary>
         public string FirstName { get; set; }
+        /// <summary>
+        /// 'true' if the entity is a company
+        /// </summary>
         public bool? IsCompany { get; set; }
+        /// <summary>
+        /// Full name of the entity
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Middle name of the entity
+        /// </summary>
         public string MiddleName { get; set; }
+        /// <summary>
+        /// Last name of the entity
+        /// </summary>
         public string LastName { get; set; }
+        /// <summary>
+        /// Organization number - only populated if entity is a company (isCompany=true)
+        /// </summary>
         public string OrganizationNo { get; set; }
+        /// <summary>
+        /// The primary language of the entity
+        /// </summary>
         public string Language { get; set; }
+        /// <summary>
+        /// Contact information of the entity
+        /// </summary>
         public ContactInfo ContactInfo { get; set; }
+        /// <summary>
+        /// Address information for the entity
+        /// </summary>
         public Address Address { get; set; }
     }
 
     public class ContactInfo
     {
+        /// <summary>
+        /// The email of the corresponding entity
+        /// </summary>
         public string Email { get; set; }
+        /// <summary>
+        /// The mobile phone no of the corresponding entity
+        /// </summary>
         public string Mobile { get; set; }
     }
 
     public class MeteringPointData
     {
+        /// <summary>
+        /// The metering point ID of the home
+        /// </summary>
         public string ConsumptionEan { get; set; }
+        /// <summary>
+        /// The grid provider of the home
+        /// </summary>
         public string GridCompany { get; set; }
+        /// <summary>
+        /// The grid area the home/metering point belongs to
+        /// </summary>
         public string GridAreaCode { get; set; }
+        /// <summary>
+        /// The price area the home/metering point belongs to
+        /// </summary>
         public string PriceAreaCode { get; set; }
+        /// <summary>
+        /// The metering point ID of the production
+        /// </summary>
         public string ProductionEan { get; set; }
+        /// <summary>
+        /// The eltax type of the home (only relevant for Swedish homes)
+        /// </summary>
         public string EnergyTaxType { get; set; }
+        /// <summary>
+        /// The VAT type of the home (only relevant for Norwegian homes)
+        /// </summary>
         public string VatType { get; set; }
+        /// <summary>
+        /// The estimated annual consumption as reported by grid company
+        /// </summary>
         public int? EstimatedAnnualConsumption { get; set; }
     }
 
     public class Subscription
     {
         public Guid? Id { get; set; }
+        /// <summary>
+        /// The owner of the subscription
+        /// </summary>
         public LegalEntity Subscriber { get; set; }
+        /// <summary>
+        /// The time the subscription started
+        /// </summary>
         public DateTimeOffset? ValidFrom { get; set; }
+        /// <summary>
+        /// The time the subscription ended
+        /// </summary>
         public DateTimeOffset? ValidTo { get; set; }
+        /// <summary>
+        /// The current status of the subscription
+        /// </summary>
         public string Status { get; set; }
+        /// <summary>
+        /// Price information related to the subscription
+        /// </summary>
         public PriceInfo PriceInfo { get; set; }
     }
 
     public class PriceInfo
     {
+        /// <summary>
+        /// The energy price right now
+        /// </summary>
         public Price Current { get; set; }
+        /// <summary>
+        /// The hourly prices of the current day
+        /// </summary>
         public ICollection<Price> Today { get; set; }
+        /// <summary>
+        /// The hourly prices of the upcoming day
+        /// </summary>
         public ICollection<Price> Tomorrow { get; set; }
+        /// <summary>
+        /// Range of prices relative to before/after arguments
+        /// </summary>
         public SubscriptionPriceConnection Range { get; set; }
     }
 
     public class Price
     {
+        /// <summary>
+        /// The total price (energy + taxes)
+        /// </summary>
         public decimal? Total { get; set; }
+        /// <summary>
+        /// Nordpool spot price
+        /// </summary>
         public decimal? Energy { get; set; }
+        /// <summary>
+        /// The tax part of the price (guarantee of origin certificate, energy tax (Sweden only) and VAT)
+        /// </summary>
         public decimal? Tax { get; set; }
+        /// <summary>
+        /// The start time of the price
+        /// </summary>
         public string StartsAt { get; set; }
+        /// <summary>
+        /// The price currency
+        /// </summary>
         public string Currency { get; set; }
+        /// <summary>
+        /// The price level compared to recent price values
+        /// </summary>
         public PriceLevel? Level { get; set; }
     }
 
@@ -2385,7 +2566,13 @@ namespace Tibber.Sdk
 
     public class SubscriptionPriceEdge
     {
+        /// <summary>
+        /// The global ID of the element
+        /// </summary>
         public string Cursor { get; set; }
+        /// <summary>
+        /// A single price node
+        /// </summary>
         public Price Node { get; set; }
     }
 
@@ -2398,14 +2585,41 @@ namespace Tibber.Sdk
 
     public class HomeConsumptionPageInfo : IPageInfo
     {
+        /// <summary>
+        /// The global ID of the last element in the list
+        /// </summary>
         public string EndCursor { get; set; }
+        /// <summary>
+        /// True if further pages are available
+        /// </summary>
         public bool? HasNextPage { get; set; }
+        /// <summary>
+        /// True if previous pages are available
+        /// </summary>
         public bool? HasPreviousPage { get; set; }
+        /// <summary>
+        /// The global ID of the first element in the list
+        /// </summary>
         public string StartCursor { get; set; }
+        /// <summary>
+        /// The number of elements in the list
+        /// </summary>
         public int? Count { get; set; }
+        /// <summary>
+        /// The currency of the page
+        /// </summary>
         public string Currency { get; set; }
+        /// <summary>
+        /// Page total cost
+        /// </summary>
         public decimal? TotalCost { get; set; }
+        /// <summary>
+        /// Total consumption for page
+        /// </summary>
         public decimal? TotalConsumption { get; set; }
+        /// <summary>
+        /// Number of entries that have been filtered from result set due to empty nodes
+        /// </summary>
         public int? Filtered { get; set; }
     }
 
@@ -2415,9 +2629,15 @@ namespace Tibber.Sdk
         public DateTimeOffset? To { get; set; }
         public decimal? UnitPrice { get; set; }
         public decimal? UnitPriceVat { get; set; }
+        /// <summary>
+        /// kWh consumed
+        /// </summary>
         public decimal? Consumption { get; set; }
         public string ConsumptionUnit { get; set; }
         public decimal? Cost { get; set; }
+        /// <summary>
+        /// The cost currency
+        /// </summary>
         public string Currency { get; set; }
     }
 
@@ -2436,14 +2656,41 @@ namespace Tibber.Sdk
 
     public class HomeProductionPageInfo : IPageInfo
     {
+        /// <summary>
+        /// The global ID of the last element in the list
+        /// </summary>
         public string EndCursor { get; set; }
+        /// <summary>
+        /// True if further pages are available
+        /// </summary>
         public bool? HasNextPage { get; set; }
+        /// <summary>
+        /// True if previous pages are available
+        /// </summary>
         public bool? HasPreviousPage { get; set; }
+        /// <summary>
+        /// The global ID of the first element in the list
+        /// </summary>
         public string StartCursor { get; set; }
+        /// <summary>
+        /// The number of elements in the list
+        /// </summary>
         public int? Count { get; set; }
+        /// <summary>
+        /// The currency of the page
+        /// </summary>
         public string Currency { get; set; }
+        /// <summary>
+        /// Page total profit
+        /// </summary>
         public decimal? TotalProfit { get; set; }
+        /// <summary>
+        /// Page total production
+        /// </summary>
         public decimal? TotalProduction { get; set; }
+        /// <summary>
+        /// Number of entries that have been filtered from result set due to empty nodes
+        /// </summary>
         public int? Filtered { get; set; }
     }
 
@@ -2453,9 +2700,18 @@ namespace Tibber.Sdk
         public DateTimeOffset? To { get; set; }
         public decimal? UnitPrice { get; set; }
         public decimal? UnitPriceVat { get; set; }
+        /// <summary>
+        /// kWh consumed
+        /// </summary>
         public decimal? Production { get; set; }
         public string ProductionUnit { get; set; }
+        /// <summary>
+        /// Total profit of the production
+        /// </summary>
         public decimal? Profit { get; set; }
+        /// <summary>
+        /// The cost currency
+        /// </summary>
         public string Currency { get; set; }
     }
 
@@ -2467,13 +2723,25 @@ namespace Tibber.Sdk
 
     public class HomeFeatures
     {
+        /// <summary>
+        /// 'true' if Tibber Pulse or Watty device is paired at home
+        /// </summary>
         public bool? RealTimeConsumptionEnabled { get; set; }
     }
 
     public class TibberMutation
     {
+        /// <summary>
+        /// Send meter reading for home (only available for Norwegian users)
+        /// </summary>
         public MeterReadingResponse SendMeterReading { get; set; }
+        /// <summary>
+        /// Update home information
+        /// </summary>
         public Home UpdateHome { get; set; }
+        /// <summary>
+        /// Send notification to Tibber app on registered devices
+        /// </summary>
         public PushNotificationResponse SendPushNotification { get; set; }
     }
 
