@@ -432,6 +432,7 @@ namespace Tibber.Sdk
                         return false;
 
                     Trace.WriteLine($"home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; re-initialize data stream");
+                    c.LastMessageReceivedAt = now;
                     return true;
                 });
         }
