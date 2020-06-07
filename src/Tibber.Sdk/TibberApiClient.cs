@@ -75,7 +75,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
-        public async Task<TibberApiQueryResult> GetBasicData(CancellationToken cancellationToken = default)
+        public async Task<TibberApiQueryResponse> GetBasicData(CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
             ValidateResult(result);
@@ -121,8 +121,8 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
-        public Task<TibberApiQueryResult> Query(string query, CancellationToken cancellationToken = default) =>
-            Request<TibberApiQueryResult>(query, cancellationToken);
+        public Task<TibberApiQueryResponse> Query(string query, CancellationToken cancellationToken = default) =>
+            Request<TibberApiQueryResponse>(query, cancellationToken);
 
         /// <summary>
         /// Executes raw GraphQL mutation.
@@ -131,8 +131,8 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
-        public Task<TibberApiMutationResult> Mutation(string mutation, CancellationToken cancellationToken = default) =>
-            Request<TibberApiMutationResult>(mutation, cancellationToken);
+        public Task<TibberApiMutationResponse> Mutation(string mutation, CancellationToken cancellationToken = default) =>
+            Request<TibberApiMutationResponse>(mutation, cancellationToken);
 
         /// <summary>
         /// Starts real-time measurement listener. You must have active Tibber Pulse device to get any values.
@@ -202,24 +202,24 @@ namespace Tibber.Sdk
         private static HttpContent JsonContent(object data) =>
             new StringContent(JsonConvert.SerializeObject(data, JsonSerializerSettings), Encoding.UTF8, "application/json");
 
-        private static void ValidateResult(TibberApiQueryResult result)
+        private static void ValidateResult(TibberApiQueryResponse response)
         {
-            if (result.Errors != null && result.Errors.Any())
-                throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, result.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
+            if (response.Errors != null && response.Errors.Any())
+                throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, response.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
         }
     }
 
-    public abstract class GraphQlResult<TDataContract>
+    public abstract class GraphQlResponse<TDataContract>
     {
         public TDataContract Data { get; set; }
         public ICollection<QueryError> Errors { get; set; }
     }
 
-    public class TibberApiQueryResult : GraphQlResult<QueryData>
+    public class TibberApiQueryResponse : GraphQlResponse<QueryData>
     {
     }
 
-    public class TibberApiMutationResult : GraphQlResult<TibberMutation>
+    public class TibberApiMutationResponse : GraphQlResponse<TibberMutation>
     {
     }
 
