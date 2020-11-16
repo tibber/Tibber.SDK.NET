@@ -6,7 +6,7 @@ namespace Tibber.Sdk
     public class RealTimeMeasurement
     {
         /// <summary>
-        /// Timestamp when usage occured
+        /// Timestamp when usage occurred
         /// </summary>
         public DateTimeOffset Timestamp { get; set; }
         /// <summary>
@@ -50,9 +50,17 @@ namespace Tibber.Sdk
         /// </summary>
         public decimal MaxPower { get; set; }
         /// <summary>
-        /// Net production at the moment (W)
+        /// Net production (A-) at the moment (Watt)
         /// </summary>
         public decimal? PowerProduction { get; set; }
+        /// <summary>
+        /// Reactive consumption (Q+) at the moment (kVAr)
+        /// </summary>
+        public decimal? PowerReactive { get; set; }
+        /// <summary>
+        /// Net reactive production (Q-) at the moment (kVAr)
+        /// </summary>
+        public decimal? PowerProductionReactive { get; set; }
         /// <summary>
         /// Minimum net production since midnight (W)
         /// </summary>
