@@ -22,9 +22,17 @@ namespace Tibber.Sdk
         /// </summary>
         public decimal AccumulatedConsumption { get; set; }
         /// <summary>
+        /// Energy consumed since the beginning of the hour (kWh)
+        /// </summary>
+        public decimal AccumulatedConsumptionLastHour { get; set; }
+        /// <summary>
         /// Net energy produced and returned to grid since midnight (kWh)
         /// </summary>
         public decimal AccumulatedProduction { get; set; }
+        /// <summary>
+        /// Net energy produced since the beginning of the hour (kWh)
+        /// </summary>
+        public decimal AccumulatedProductionLastHour { get; set; }
         /// <summary>
         /// Accumulated cost since midnight; requires active Tibber power deal
         /// </summary>
