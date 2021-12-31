@@ -13,10 +13,10 @@
     <Copyright>Copyright 2017-2020</Copyright>
     <Title>Tibber SDK.NET</Title>
     <PackageLicenseFile>License.md</PackageLicenseFile>
-    <PackageLicense>https://raw.githubusercontent.com/tibbercom/Tibber.SDK.NET/master/License.md</PackageLicense>
+    <PackageLicense>https://raw.githubusercontent.com/tibber/Tibber.SDK.NET/master/License.md</PackageLicense>
     <PackageProjectUrl>https://developer.tibber.com/</PackageProjectUrl>
     <PackageIcon>TibberLogo.png</PackageIcon>
-    <RepositoryUrl>https://github.com/tibbercom/Tibber.SDK.NET</RepositoryUrl>
+    <RepositoryUrl>https://github.com/tibber/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
     <PackageReleaseNotes>added PowerReactive and PowerProductionReactive properties</PackageReleaseNotes>
