@@ -22,10 +22,10 @@ namespace Tibber.Sdk
     {
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
 
-        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
         private static readonly JsonSerializerSettings JsonSerializerSettings =
-            new JsonSerializerSettings
+            new()
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 Converters = { new StringEnumConverter() },
@@ -204,7 +204,7 @@ namespace Tibber.Sdk
 
         private static void ValidateResult(TibberApiQueryResponse response)
         {
-            if (response.Errors != null && response.Errors.Any())
+            if (response.Errors is not null && response.Errors.Any())
                 throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, response.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
         }
     }

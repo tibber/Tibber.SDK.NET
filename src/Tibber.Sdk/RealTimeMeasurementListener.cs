@@ -54,10 +54,10 @@ namespace Tibber.Sdk
     {
         private const int StreamReSubscriptionCheckPeriodMs = 60000;
 
-        private readonly Dictionary<Guid, HomeStreamObserverCollection> _homeObservables = new Dictionary<Guid, HomeStreamObserverCollection>();
-        private readonly ArraySegment<byte> _receiveBuffer = new ArraySegment<byte>(new byte[16384]);
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(0);
+        private readonly Dictionary<Guid, HomeStreamObserverCollection> _homeObservables = new();
+        private readonly ArraySegment<byte> _receiveBuffer = new(new byte[16384]);
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly SemaphoreSlim _semaphore = new(0);
 
         private readonly string _accessToken;
         private readonly Timer _streamRestartTimer;
@@ -85,7 +85,7 @@ namespace Tibber.Sdk
                 shouldInitialize = !_homeObservables.Any();
 
                 if (_homeObservables.TryGetValue(homeId, out var collection))
-                    throw new InvalidOperationException($"Home '{homeId}' is already subscribed. ");
+                    throw new InvalidOperationException($"Home {homeId} is already subscribed. ");
 
                 subscriptionId = Interlocked.Increment(ref _streamId);
                 _homeObservables.Add(
@@ -107,7 +107,7 @@ namespace Tibber.Sdk
                 await SubscribeStream(homeId, subscriptionId, cancellationToken);
 
                 if (!observable.IsInitialized)
-                    throw new InvalidOperationException($"real-time measurement subscription initialization failed{(observable.ErrorMessage == null ? null : $": {observable.ErrorMessage}")}");
+                    throw new InvalidOperationException($"real-time measurement subscription initialization failed{(observable.ErrorMessage is null ? null : $": {observable.ErrorMessage}")}");
             }
             catch
             {
@@ -148,7 +148,7 @@ namespace Tibber.Sdk
                 foreach (var homeObserverCollection in _homeObservables.Values)
                 {
                     if (homeObserverCollection.Observers.Contains(observer))
-                        throw new ArgumentException("Observer has been subscribed already. ", nameof(observer));
+                        throw new ArgumentException("Observer has been subscribed already.", nameof(observer));
                 }
 
                 var collection = _homeObservables[observable.HomeId];
@@ -288,7 +288,7 @@ namespace Tibber.Sdk
                     lock (_homeObservables)
                         homeStreamObserverCollection = _homeObservables.Values.SingleOrDefault(v => v.Observable.SubscriptionId == measurementGroup.Key);
 
-                    if (homeStreamObserverCollection == null)
+                    if (homeStreamObserverCollection is null)
                         continue;
 
                     homeStreamObserverCollection.LastMessageReceivedAt = DateTimeOffset.UtcNow;
@@ -304,8 +304,16 @@ namespace Tibber.Sdk
                                     _semaphore.Release();
                                 }
 
+                                if (message.Payload?.Errors?.Count > 0)
+                                {
+                                    foreach (var error in message.Payload.Errors)
+                                        homeStreamObserverCollection.Observable.Error(error.Message);
+
+                                    continue;
+                                }
+
                                 var measurement = message.Payload?.Data?.RealTimeMeasurement;
-                                if (measurement == null)
+                                if (measurement is null)
                                     continue;
 
                                 ExecuteObserverAction(homeStreamObserverCollection.Observers.ToArray(), o => o.OnNext(measurement));
@@ -320,8 +328,10 @@ namespace Tibber.Sdk
                                 break;*/
 
                             case "error":
-                                Trace.WriteLine("web socket error message received: " + message.Payload.Error);
-                                homeStreamObserverCollection.Observable.Error(message.Payload.Error);
+                                Trace.WriteLine($"web socket error message received: {String.Join("; ", message.Payload.Errors.Select(e => e.Message))}");
+                                foreach (var error in message.Payload.Errors)
+                                    homeStreamObserverCollection.Observable.Error(error.Message);
+
                                 _semaphore.Release();
                                 break;
                         }
@@ -337,7 +347,7 @@ namespace Tibber.Sdk
             {
                 var subscriptionTask = (Task)Task.FromResult(0);
                 foreach (var collection in _homeObservables.Values.Where(predicate))
-                    subscriptionTask = subscriptionTask.ContinueWith(t => SubscribeStream(collection.Observable.HomeId, collection.Observable.SubscriptionId, _cancellationTokenSource.Token));
+                    subscriptionTask = subscriptionTask.ContinueWith(_ => SubscribeStream(collection.Observable.HomeId, collection.Observable.SubscriptionId, _cancellationTokenSource.Token));
             }
         }
 
@@ -365,7 +375,7 @@ namespace Tibber.Sdk
 
             _streamRestartTimer.Dispose();
 
-            if (_wssClient.State == WebSocketState.Open || _wssClient.State == WebSocketState.CloseReceived || _wssClient.State == WebSocketState.CloseSent)
+            if (_wssClient.State is WebSocketState.Open or WebSocketState.CloseReceived or WebSocketState.CloseSent)
                 try
                 {
                     _wssClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "closed by client", CancellationToken.None).GetAwaiter().GetResult();
@@ -458,10 +468,8 @@ namespace Tibber.Sdk
             public WebSocketPayload Payload { get; set; }
         }
 
-        private class WebSocketPayload
+        private class WebSocketPayload : GraphQlResponse<WebSocketData>
         {
-            public WebSocketData Data { get; set; }
-            public string Error { get; set; }
         }
 
         private class WebSocketData
@@ -472,7 +480,7 @@ namespace Tibber.Sdk
 
         private class HomeStreamObserverCollection
         {
-            public readonly List<IObserver<RealTimeMeasurement>> Observers = new List<IObserver<RealTimeMeasurement>>();
+            public readonly List<IObserver<RealTimeMeasurement>> Observers = new();
             public HomeRealTimeMeasurementObservable Observable;
             public DateTimeOffset LastMessageReceivedAt = DateTimeOffset.MaxValue;
         }

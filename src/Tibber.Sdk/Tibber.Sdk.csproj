@@ -10,7 +10,7 @@
     <Version>0.3.1-beta</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright 2017-2020</Copyright>
+    <Copyright>Copyright 2017-2022</Copyright>
     <Title>Tibber SDK.NET</Title>
     <PackageLicenseFile>License.md</PackageLicenseFile>
     <PackageLicense>https://raw.githubusercontent.com/tibber/Tibber.SDK.NET/master/License.md</PackageLicense>
@@ -24,6 +24,10 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
