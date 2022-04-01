@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -191,7 +191,6 @@ namespace Tibber.Sdk
             _wssClient?.Dispose();
             _wssClient = new ClientWebSocket();
             _wssClient.Options.AddSubProtocol(webSocketSubProtocol);
-            _wssClient.Options.SetRequestHeader("Sec-WebSocket-Protocol", webSocketSubProtocol);
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
 
             Trace.WriteLine("web socket connected");
