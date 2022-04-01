@@ -22,7 +22,7 @@ namespace Tibber.Sdk
     {
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
 
-        public static readonly ProductInfoHeaderValue UserAgent = new("Tibber-SDK.NET", "1.0");
+        public static readonly ProductInfoHeaderValue UserAgent = new("Tibber-SDK.NET", "2.0.0");
 
         private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
