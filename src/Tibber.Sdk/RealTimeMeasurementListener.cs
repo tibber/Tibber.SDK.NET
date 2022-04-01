@@ -191,6 +191,7 @@ namespace Tibber.Sdk
             _wssClient?.Dispose();
             _wssClient = new ClientWebSocket();
             _wssClient.Options.AddSubProtocol(webSocketSubProtocol);
+            _wssClient.Options.SetRequestHeader("User-Agent", TibberApiClient.UserAgent.ToString());
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
 
             Trace.WriteLine("web socket connected");

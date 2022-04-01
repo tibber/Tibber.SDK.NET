@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +21,8 @@ namespace Tibber.Sdk
     public class TibberApiClient : IDisposable
     {
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
+
+        public static readonly ProductInfoHeaderValue UserAgent = new("Tibber-SDK.NET", "1.0");
 
         private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
@@ -56,7 +58,7 @@ namespace Tibber.Sdk
                     DefaultRequestHeaders =
                     {
                         AcceptEncoding = { new StringWithQualityHeaderValue("gzip") },
-                        UserAgent = { new ProductInfoHeaderValue("Tibber-SDK.NET", "1.0") }
+                        UserAgent = { UserAgent }
                     }
                 };
 
