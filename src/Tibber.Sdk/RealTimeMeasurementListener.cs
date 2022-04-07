@@ -166,7 +166,7 @@ namespace Tibber.Sdk
         private async Task SubscribeStream(Guid homeId, int subscriptionId, CancellationToken cancellationToken)
         {
             await ExecuteStreamRequest(
-                $@"{{""payload"":{{""query"":""subscription{{liveMeasurement(homeId:\""{homeId}\""){{timestamp,power,powerReactive,powerProduction,powerProductionReactive,accumulatedConsumption,accumulatedConsumptionLastHour,accumulatedProduction,accumulatedProductionLastHour,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,minPowerProduction,maxPowerProduction,voltagePhase1,voltagePhase2,voltagePhase3,currentL1,currentL2,currentL3,lastMeterConsumption,lastMeterProduction,powerFactor,signalStrength}}}}"",""variables"":{{}},""extensions"":{{}},""operationName"":null}},""type"":""start"",""id"":{subscriptionId}}}",
+                $@"{{""payload"":{{""query"":""subscription{{liveMeasurement(homeId:\""{homeId}\""){{timestamp,power,powerReactive,powerProduction,powerProductionReactive,accumulatedConsumption,accumulatedConsumptionLastHour,accumulatedProduction,accumulatedProductionLastHour,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,minPowerProduction,maxPowerProduction,voltagePhase1,voltagePhase2,voltagePhase3,currentL1,currentL2,currentL3,lastMeterConsumption,lastMeterProduction,powerFactor,signalStrength}}}}"",""variables"":{{}},""extensions"":{{}}}},""type"":""subscribe"",""id"":""{subscriptionId}""}}",
                 cancellationToken);
 
             if (cancellationToken == default)
@@ -186,7 +186,7 @@ namespace Tibber.Sdk
 
         private async Task Initialize(CancellationToken cancellationToken)
         {
-            const string webSocketSubProtocol = "graphql-subscriptions";
+            const string webSocketSubProtocol = "graphql-transport-ws";
 
             _wssClient?.Dispose();
             _wssClient = new ClientWebSocket();
@@ -196,7 +196,7 @@ namespace Tibber.Sdk
 
             Trace.WriteLine("web socket connected");
 
-            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""connection_init"",""payload"":""token={_accessToken}""}}"));
+            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""connection_init"",""payload"":{{""token"":""{_accessToken}""}}}}"));
             await _wssClient.SendAsync(init, WebSocketMessageType.Text, true, cancellationToken);
 
             Trace.WriteLine("web socket initialization message sent");
@@ -297,7 +297,7 @@ namespace Tibber.Sdk
                     {
                         switch (message.Type)
                         {
-                            case "data":
+                            case "next":
                                 if (!homeStreamObserverCollection.Observable.IsInitialized)
                                 {
                                     homeStreamObserverCollection.Observable.Initialize();
@@ -320,12 +320,12 @@ namespace Tibber.Sdk
 
                                 break;
 
-                            /*case "complete":
+                            case "complete":
                                 ExecuteObserverAction(homeStreamObserverCollection.Observers.ToArray(), o => o.OnCompleted());
                                 lock (_homeObservables)
                                     _homeObservables.Remove(homeStreamObserverCollection.Observable.HomeId);
 
-                                break;*/
+                                break;
 
                             case "error":
                                 Trace.WriteLine($"web socket error message received: {String.Join("; ", message.Payload.Errors.Select(e => e.Message))}");
