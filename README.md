@@ -121,7 +121,8 @@ public class RealTimeMeasurementObserver : IObserver<RealTimeMeasurement>
 
 Listener initialization:
 ```csharp
-var client = new TibberApiClient(accessToken);
+var userAgent = new ProductInfoHeaderValue("My-home-automation-system", "1.2");
+var client = new TibberApiClient(accessToken, userAgent);
 var homeId = Guid.Parse("c70dcbe5-4485-4821-933d-a8a86452737b");
 var listener = await client.StartRealTimeMeasurementListener(homeId);
 listener.Subscribe(new RealTimeMeasurementObserver());
