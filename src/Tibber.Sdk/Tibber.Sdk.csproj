@@ -30,6 +30,10 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFrameworks)', '^net\d'))">
+	<DefineConstants>NETFRAMEWORK</DefineConstants>
+  </PropertyGroup>
+	
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.*" />
   </ItemGroup>
