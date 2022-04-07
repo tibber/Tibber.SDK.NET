@@ -21,8 +21,9 @@ namespace Tibber.Sdk
     public class TibberApiClient : IDisposable
     {
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
+        public static HttpHeaderValueCollection<ProductInfoHeaderValue> UserAgent { get; private set; }
 
-        public static readonly ProductInfoHeaderValue UserAgent = new("Tibber-SDK.NET", "2.0.0");
+        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "2.0.0");
 
         private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
@@ -41,7 +42,7 @@ namespace Tibber.Sdk
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
 
-        public TibberApiClient(string accessToken, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null)
+        public TibberApiClient(string accessToken, ProductInfoHeaderValue userAgent = null, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null)
         {
             if (String.IsNullOrWhiteSpace(accessToken))
                 throw new ArgumentException("access token required", nameof(accessToken));
@@ -57,10 +58,14 @@ namespace Tibber.Sdk
                     Timeout = timeout ?? DefaultTimeout,
                     DefaultRequestHeaders =
                     {
-                        AcceptEncoding = { new StringWithQualityHeaderValue("gzip") },
-                        UserAgent = { UserAgent }
+                        AcceptEncoding = { new StringWithQualityHeaderValue("gzip") }
                     }
                 };
+
+            UserAgent = _httpClient.DefaultRequestHeaders.UserAgent;
+            if (userAgent is not null)
+                UserAgent.Add(userAgent);
+            UserAgent.Add(TibberSdkUserAgent);
 
             _realTimeMeasurementListener = new RealTimeMeasurementListener(accessToken);
         }

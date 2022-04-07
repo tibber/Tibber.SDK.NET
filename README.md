@@ -22,7 +22,10 @@ using Tibber.Sdk;
 ```
 
 ```csharp
-var client = new TibberApiClient(accessToken);
+// Please set user agent so we can track different client implementations
+var userAgent = new ProductInfoHeaderValue("My-home-automation-system", "1.2"); 
+
+var client = new TibberApiClient(accessToken, userAgent);
 
 var basicData = await client.GetBasicData();
 var homeId = basicData.Data.Viewer.Homes.First().Id.Value;
