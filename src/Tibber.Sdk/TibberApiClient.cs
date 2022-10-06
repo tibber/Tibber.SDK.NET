@@ -23,11 +23,11 @@ namespace Tibber.Sdk
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
         public static HttpHeaderValueCollection<ProductInfoHeaderValue> UserAgent { get; private set; }
 
-        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.4.0-beta");
+        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.4.1-beta");
 
         private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
-        private static readonly JsonSerializerSettings JsonSerializerSettings =
+        internal static readonly JsonSerializerSettings JsonSerializerSettings =
             new()
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),

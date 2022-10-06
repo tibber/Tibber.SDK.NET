@@ -191,14 +191,21 @@ namespace Tibber.Sdk
             _wssClient?.Dispose();
             _wssClient = new ClientWebSocket();
             _wssClient.Options.AddSubProtocol(webSocketSubProtocol);
+
+            var connectionInitPayload = new WebSocketConnectionInitPayload { Token = _accessToken };
 #if !NETFRAMEWORK
             _wssClient.Options.SetRequestHeader("User-Agent", TibberApiClient.UserAgent.ToString());
+#else
+            connectionInitPayload.UserAgent = TibberApiClient.UserAgent.ToString();
 #endif
             await _wssClient.ConnectAsync(new Uri($"{TibberApiClient.BaseUrl.Replace("https", "wss").Replace("http", "ws")}gql/subscriptions"), cancellationToken);
 
             Trace.WriteLine("web socket connected");
 
-            var init = new ArraySegment<byte>(Encoding.ASCII.GetBytes($@"{{""type"":""connection_init"",""payload"":{{""token"":""{_accessToken}""}}}}"));
+            var connectionInitMessage = new WebSocketConnectionInitMessage{ Payload = connectionInitPayload };
+            var json = JsonConvert.SerializeObject(connectionInitMessage, TibberApiClient.JsonSerializerSettings);
+            var init = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+
             await _wssClient.SendAsync(init, WebSocketMessageType.Text, true, cancellationToken);
 
             Trace.WriteLine("web socket initialization message sent");
@@ -207,7 +214,7 @@ namespace Tibber.Sdk
             if (result.CloseStatus.HasValue)
                 throw new InvalidOperationException($"web socket initialization failed: {result.CloseStatus}");
 
-            var json = Encoding.ASCII.GetString(_receiveBuffer.Array, 0, result.Count);
+            json = Encoding.ASCII.GetString(_receiveBuffer.Array, 0, result.Count);
             var message = JsonConvert.DeserializeObject<WebSocketMessage>(json);
             if (message.Type != "connection_ack")
                 throw new InvalidOperationException($"web socket initialization failed: {json}");
@@ -461,6 +468,18 @@ namespace Tibber.Sdk
                 return 5;
 
             return 60;
+        }
+
+        private class WebSocketConnectionInitMessage
+        {
+            public string Type => "connection_init";
+            public WebSocketConnectionInitPayload Payload { get; set; }
+        }
+
+        private class WebSocketConnectionInitPayload
+        {
+            public string Token { get; set; }
+            public string UserAgent { get; set; }
         }
 
         private class WebSocketMessage
