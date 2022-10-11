@@ -438,7 +438,7 @@ namespace Tibber.Sdk
                 {
                     var delay = GetDelaySeconds(failures);
                     Trace.WriteLine($"retrying to connect in {delay} seconds");
-                    await Task.Delay(TimeSpan.FromSeconds(delay));
+                    await Task.Delay(TimeSpan.FromSeconds(delay), _cancellationTokenSource.Token);
 
                     Trace.WriteLine("check there is a valid real time device");
                     var homes = await _tibberApiClient.ValidateRealtimeDevice();
