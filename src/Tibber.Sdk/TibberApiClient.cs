@@ -58,6 +58,7 @@ namespace Tibber.Sdk
                     Timeout = timeout ?? DefaultTimeout,
                     DefaultRequestHeaders =
                     {
+                        Authorization = new AuthenticationHeaderValue("Bearer", _accessToken),
                         AcceptEncoding = { new StringWithQualityHeaderValue("gzip") }
                     }
                 };
@@ -231,23 +232,21 @@ namespace Tibber.Sdk
 
         private async Task<TResult> Request<TResult>(string query, CancellationToken cancellationToken)
         {
-            var relativeUri = $"gql?token={_accessToken}";
-
             var requestStart = DateTimeOffset.UtcNow;
 
             HttpResponseMessage response;
 
             try
             {
-                response = await _httpClient.PostAsync(relativeUri, JsonContent(new { query }), cancellationToken);
+                response = await _httpClient.PostAsync(String.Empty, JsonContent(new { query }), cancellationToken);
             }
             catch (Exception exception)
             {
-                throw new TibberApiHttpException(new Uri(_httpClient.BaseAddress, relativeUri), HttpMethod.Post, DateTimeOffset.Now - requestStart, exception.Message, exception);
+                throw new TibberApiHttpException(_httpClient.BaseAddress, HttpMethod.Post, DateTimeOffset.Now - requestStart, exception.Message, exception);
             }
 
             if (!response.IsSuccessStatusCode)
-                throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+                throw await TibberApiHttpException.Create(new Uri(BaseUrl), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
 
             using var stream = await response.Content.ReadAsStreamAsync();
             using var streamReader = new StreamReader(stream);
