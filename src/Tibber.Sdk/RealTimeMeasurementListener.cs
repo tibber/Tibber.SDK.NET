@@ -52,6 +52,8 @@ namespace Tibber.Sdk
 
     internal class RealTimeMeasurementListener : IDisposable
     {
+        private static readonly Random Random = new();
+
         private const int StreamReSubscriptionCheckPeriodMs = 60000;
 
         private readonly TibberApiClient _tibberApiClient;
@@ -475,7 +477,7 @@ namespace Tibber.Sdk
         private static int GetDelaySeconds(int failures)
         {
             // Jitter of 5 to 60 seconds
-            var jitter = new Random().Next(5, 60);
+            var jitter = Random.Next(5, 60);
 
             // Exponential backoff
             var delay = Math.Pow(failures, 2);
