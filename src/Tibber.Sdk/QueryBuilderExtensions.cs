@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Tibber.Sdk
 {
@@ -28,6 +28,44 @@ namespace Tibber.Sdk
                                 .WithOwner(new LegalEntityQueryBuilder().WithAllFields())
                                 .WithFeatures(new HomeFeaturesQueryBuilder().WithAllFields())
                                 .WithMeteringPointData(new MeteringPointDataQueryBuilder().WithAllFields())
+                        )
+                );
+
+        /// <summary>
+        /// Builds a query for homes and features.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static TibberQueryBuilder WithHomes(this TibberQueryBuilder builder) =>
+            builder.WithAllScalarFields()
+                .WithViewer(
+                    new ViewerQueryBuilder()
+                        .WithAllScalarFields()
+                        .WithHomes(
+                            new HomeQueryBuilder()
+                                .WithAllScalarFields()
+                                .WithFeatures(new HomeFeaturesQueryBuilder()
+                                    .WithAllFields())
+                        )
+                );
+
+        /// <summary>
+        /// Builds a query for home and features.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="homeId"></param>
+        /// <returns></returns>
+        public static TibberQueryBuilder WithHomeById(this TibberQueryBuilder builder, Guid homeId) =>
+            builder.WithAllScalarFields()
+                .WithViewer(
+                    new ViewerQueryBuilder()
+                        .WithAllScalarFields()
+                        .WithHome(
+                            new HomeQueryBuilder()
+                                .WithAllScalarFields()
+                                .WithFeatures(new HomeFeaturesQueryBuilder()
+                                    .WithAllFields()),
+                            homeId
                         )
                 );
 
@@ -74,7 +112,7 @@ namespace Tibber.Sdk
         /// <returns></returns>
         public static HomeQueryBuilder WithConsumption(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
             homeQueryBuilder.WithConsumption(
-                new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionEntryQueryBuilder().WithAllFields()),
+                new HomeConsumptionConnectionQueryBuilder().WithNodes(new ConsumptionQueryBuilder().WithAllFields()),
                 resolution,
                 last: lastEntries);
 
@@ -87,7 +125,7 @@ namespace Tibber.Sdk
         /// <returns></returns>
         public static HomeQueryBuilder WithHomeProduction(this HomeQueryBuilder homeQueryBuilder, EnergyResolution resolution, int lastEntries) =>
             homeQueryBuilder.WithProduction(
-                new HomeProductionConnectionQueryBuilder().WithNodes(new ProductionEntryQueryBuilder().WithAllFields()),
+                new HomeProductionConnectionQueryBuilder().WithNodes(new ProductionQueryBuilder().WithAllFields()),
                 resolution,
                 last: lastEntries);
 

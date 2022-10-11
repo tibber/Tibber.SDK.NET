@@ -37,7 +37,7 @@ namespace Tibber.Sdk
 
         private static readonly JsonSerializer Serializer = JsonSerializer.Create(JsonSerializerSettings);
 
-        private readonly RealTimeMeasurementListener _realTimeMeasurementListener;
+        private RealTimeMeasurementListener _realTimeMeasurementListener;
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
@@ -66,8 +66,6 @@ namespace Tibber.Sdk
             if (userAgent is not null)
                 UserAgent.Add(userAgent);
             UserAgent.Add(TibberSdkUserAgent);
-
-            _realTimeMeasurementListener = new RealTimeMeasurementListener(accessToken);
         }
 
         public void Dispose()
@@ -85,6 +83,33 @@ namespace Tibber.Sdk
         public async Task<TibberApiQueryResponse> GetBasicData(CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
+            ValidateResult(result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets homes and features.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns></returns>
+        public async Task<TibberApiQueryResponse> GetHomes(CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomes().Build(), cancellationToken);
+            ValidateResult(result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets home and features by home id.
+        /// </summary>
+        /// <param name="homeId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns></returns>
+        public async Task<TibberApiQueryResponse> GetHomeById(Guid homeId, CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomeById(homeId).Build(), cancellationToken);
             ValidateResult(result);
             return result;
         }
@@ -141,8 +166,26 @@ namespace Tibber.Sdk
         public Task<TibberApiMutationResponse> Mutation(string mutation, CancellationToken cancellationToken = default) =>
             Request<TibberApiMutationResponse>(mutation, cancellationToken);
 
+
+        public async Task<TibberApiQueryResponse> ValidateRealtimeDevice(CancellationToken cancellationToken = default)
+        {
+            var homes = await GetHomes(cancellationToken);
+
+            if (!(homes?.Data?.Viewer?.Homes?.Any() ?? false))
+                throw new ApplicationException("No homes found");
+
+            if (!(homes.Data?.Viewer?.Homes?.Any(h => h.Features?.RealTimeConsumptionEnabled ?? false) ?? false))
+                throw new ApplicationException("No homes with real time consumption devices found");
+
+            var websocketSubscriptionUrl = homes.Data?.Viewer?.WebsocketSubscriptionUrl;
+            if (websocketSubscriptionUrl is null)
+                throw new ApplicationException("Unable to retrieve web socket subscription url");
+
+            return homes;
+        }
+
         /// <summary>
-        /// Starts real-time measurement listener. You must have active Tibber Pulse device to get any values.
+        /// Checks the home has real-time measurement device and starts listener. You must have active Tibber Pulse device to get any values.
         /// </summary>
         /// <param name="homeId"></param>
         /// <param name="cancellationToken"></param>
@@ -150,7 +193,13 @@ namespace Tibber.Sdk
         /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
         public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
         {
+            var homes = await ValidateRealtimeDevice(cancellationToken);
+            var websocketSubscriptionUrl = homes.Data.Viewer.WebsocketSubscriptionUrl;
+
             await Semaphore.WaitAsync(cancellationToken);
+
+            if (_realTimeMeasurementListener is null)
+                _realTimeMeasurementListener = new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
 
             try
             {
