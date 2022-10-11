@@ -199,8 +199,8 @@ namespace Tibber.Sdk
 
             await Semaphore.WaitAsync(cancellationToken);
 
-            if (_realTimeMeasurementListener is null)
-                _realTimeMeasurementListener = new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
+            _realTimeMeasurementListener ??=
+                new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
 
             try
             {
