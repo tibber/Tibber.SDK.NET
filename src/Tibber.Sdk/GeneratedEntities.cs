@@ -2334,7 +2334,7 @@ namespace Tibber.Sdk
         }
     }
 
-    public partial class ConsumptionQueryBuilder : GraphQlQueryBuilder<ConsumptionQueryBuilder>
+    public partial class ConsumptionEntryQueryBuilder : GraphQlQueryBuilder<ConsumptionEntryQueryBuilder>
     {
         private static readonly GraphQlFieldMetadata[] AllFieldMetadata =
             new[]
@@ -2353,88 +2353,88 @@ namespace Tibber.Sdk
 
         public override IReadOnlyList<GraphQlFieldMetadata> AllFields { get { return AllFieldMetadata; } }
 
-        public ConsumptionQueryBuilder WithFrom(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithFrom(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("from", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptFrom()
+        public ConsumptionEntryQueryBuilder ExceptFrom()
         {
             return ExceptField("from");
         }
 
-        public ConsumptionQueryBuilder WithTo(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithTo(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("to", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptTo()
+        public ConsumptionEntryQueryBuilder ExceptTo()
         {
             return ExceptField("to");
         }
 
-        public ConsumptionQueryBuilder WithUnitPrice(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithUnitPrice(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("unitPrice", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptUnitPrice()
+        public ConsumptionEntryQueryBuilder ExceptUnitPrice()
         {
             return ExceptField("unitPrice");
         }
 
-        public ConsumptionQueryBuilder WithUnitPriceVat(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithUnitPriceVat(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("unitPriceVAT", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptUnitPriceVat()
+        public ConsumptionEntryQueryBuilder ExceptUnitPriceVat()
         {
             return ExceptField("unitPriceVAT");
         }
 
-        public ConsumptionQueryBuilder WithConsumption(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithConsumption(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("consumption", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptConsumption()
+        public ConsumptionEntryQueryBuilder ExceptConsumption()
         {
             return ExceptField("consumption");
         }
 
-        public ConsumptionQueryBuilder WithConsumptionUnit(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithConsumptionUnit(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("consumptionUnit", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptConsumptionUnit()
+        public ConsumptionEntryQueryBuilder ExceptConsumptionUnit()
         {
             return ExceptField("consumptionUnit");
         }
 
-        public ConsumptionQueryBuilder WithCost(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithCost(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("cost", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptCost()
+        public ConsumptionEntryQueryBuilder ExceptCost()
         {
             return ExceptField("cost");
         }
 
-        public ConsumptionQueryBuilder WithCurrency(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ConsumptionEntryQueryBuilder WithCurrency(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("currency", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ConsumptionQueryBuilder ExceptCurrency()
+        public ConsumptionEntryQueryBuilder ExceptCurrency()
         {
             return ExceptField("currency");
         }
     }
 
-    public partial class ProductionQueryBuilder : GraphQlQueryBuilder<ProductionQueryBuilder>
+    public partial class ProductionEntryQueryBuilder : GraphQlQueryBuilder<ProductionEntryQueryBuilder>
     {
         private static readonly GraphQlFieldMetadata[] AllFieldMetadata =
             new[]
@@ -2453,82 +2453,82 @@ namespace Tibber.Sdk
 
         public override IReadOnlyList<GraphQlFieldMetadata> AllFields { get { return AllFieldMetadata; } }
 
-        public ProductionQueryBuilder WithFrom(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithFrom(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("from", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptFrom()
+        public ProductionEntryQueryBuilder ExceptFrom()
         {
             return ExceptField("from");
         }
 
-        public ProductionQueryBuilder WithTo(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithTo(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("to", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptTo()
+        public ProductionEntryQueryBuilder ExceptTo()
         {
             return ExceptField("to");
         }
 
-        public ProductionQueryBuilder WithUnitPrice(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithUnitPrice(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("unitPrice", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptUnitPrice()
+        public ProductionEntryQueryBuilder ExceptUnitPrice()
         {
             return ExceptField("unitPrice");
         }
 
-        public ProductionQueryBuilder WithUnitPriceVat(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithUnitPriceVat(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("unitPriceVAT", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptUnitPriceVat()
+        public ProductionEntryQueryBuilder ExceptUnitPriceVat()
         {
             return ExceptField("unitPriceVAT");
         }
 
-        public ProductionQueryBuilder WithProduction(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithProduction(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("production", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptProduction()
+        public ProductionEntryQueryBuilder ExceptProduction()
         {
             return ExceptField("production");
         }
 
-        public ProductionQueryBuilder WithProductionUnit(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithProductionUnit(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("productionUnit", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptProductionUnit()
+        public ProductionEntryQueryBuilder ExceptProductionUnit()
         {
             return ExceptField("productionUnit");
         }
 
-        public ProductionQueryBuilder WithProfit(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithProfit(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("profit", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptProfit()
+        public ProductionEntryQueryBuilder ExceptProfit()
         {
             return ExceptField("profit");
         }
 
-        public ProductionQueryBuilder WithCurrency(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public ProductionEntryQueryBuilder WithCurrency(string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             return WithScalarField("currency", alias, new GraphQlDirective[] { include, skip });
         }
 
-        public ProductionQueryBuilder ExceptCurrency()
+        public ProductionEntryQueryBuilder ExceptCurrency()
         {
             return ExceptField("currency");
         }
@@ -2540,7 +2540,7 @@ namespace Tibber.Sdk
             new[]
             {
             new GraphQlFieldMetadata { Name = "cursor" },
-            new GraphQlFieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(ConsumptionQueryBuilder) }
+            new GraphQlFieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(ConsumptionEntryQueryBuilder) }
             };
 
         protected override string TypeName { get { return "HomeConsumptionEdge"; } }
@@ -2557,9 +2557,9 @@ namespace Tibber.Sdk
             return ExceptField("cursor");
         }
 
-        public HomeConsumptionEdgeQueryBuilder WithNode(ConsumptionQueryBuilder consumptionQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public HomeConsumptionEdgeQueryBuilder WithNode(ConsumptionEntryQueryBuilder consumptionEntryQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
-            return WithObjectField("node", alias, consumptionQueryBuilder, new GraphQlDirective[] { include, skip });
+            return WithObjectField("node", alias, consumptionEntryQueryBuilder, new GraphQlDirective[] { include, skip });
         }
 
         public HomeConsumptionEdgeQueryBuilder ExceptNode()
@@ -2574,7 +2574,7 @@ namespace Tibber.Sdk
             new[]
             {
             new GraphQlFieldMetadata { Name = "cursor" },
-            new GraphQlFieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(ProductionQueryBuilder) }
+            new GraphQlFieldMetadata { Name = "node", IsComplex = true, QueryBuilderType = typeof(ProductionEntryQueryBuilder) }
             };
 
         protected override string TypeName { get { return "HomeProductionEdge"; } }
@@ -2591,9 +2591,9 @@ namespace Tibber.Sdk
             return ExceptField("cursor");
         }
 
-        public HomeProductionEdgeQueryBuilder WithNode(ProductionQueryBuilder productionQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public HomeProductionEdgeQueryBuilder WithNode(ProductionEntryQueryBuilder productionEntryQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
-            return WithObjectField("node", alias, productionQueryBuilder, new GraphQlDirective[] { include, skip });
+            return WithObjectField("node", alias, productionEntryQueryBuilder, new GraphQlDirective[] { include, skip });
         }
 
         public HomeProductionEdgeQueryBuilder ExceptNode()
@@ -2608,7 +2608,7 @@ namespace Tibber.Sdk
             new[]
             {
             new GraphQlFieldMetadata { Name = "pageInfo", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionPageInfoQueryBuilder) },
-            new GraphQlFieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(ConsumptionQueryBuilder) },
+            new GraphQlFieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(ConsumptionEntryQueryBuilder) },
             new GraphQlFieldMetadata { Name = "edges", IsComplex = true, QueryBuilderType = typeof(HomeConsumptionEdgeQueryBuilder) }
             };
 
@@ -2626,9 +2626,9 @@ namespace Tibber.Sdk
             return ExceptField("pageInfo");
         }
 
-        public HomeConsumptionConnectionQueryBuilder WithNodes(ConsumptionQueryBuilder consumptionQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public HomeConsumptionConnectionQueryBuilder WithNodes(ConsumptionEntryQueryBuilder consumptionEntryQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
-            return WithObjectField("nodes", alias, consumptionQueryBuilder, new GraphQlDirective[] { include, skip });
+            return WithObjectField("nodes", alias, consumptionEntryQueryBuilder, new GraphQlDirective[] { include, skip });
         }
 
         public HomeConsumptionConnectionQueryBuilder ExceptNodes()
@@ -2653,7 +2653,7 @@ namespace Tibber.Sdk
             new[]
             {
             new GraphQlFieldMetadata { Name = "pageInfo", IsComplex = true, QueryBuilderType = typeof(HomeProductionPageInfoQueryBuilder) },
-            new GraphQlFieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(ProductionQueryBuilder) },
+            new GraphQlFieldMetadata { Name = "nodes", IsComplex = true, QueryBuilderType = typeof(ProductionEntryQueryBuilder) },
             new GraphQlFieldMetadata { Name = "edges", IsComplex = true, QueryBuilderType = typeof(HomeProductionEdgeQueryBuilder) }
             };
 
@@ -2671,9 +2671,9 @@ namespace Tibber.Sdk
             return ExceptField("pageInfo");
         }
 
-        public HomeProductionConnectionQueryBuilder WithNodes(ProductionQueryBuilder productionQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public HomeProductionConnectionQueryBuilder WithNodes(ProductionEntryQueryBuilder productionEntryQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
-            return WithObjectField("nodes", alias, productionQueryBuilder, new GraphQlDirective[] { include, skip });
+            return WithObjectField("nodes", alias, productionEntryQueryBuilder, new GraphQlDirective[] { include, skip });
         }
 
         public HomeProductionConnectionQueryBuilder ExceptNodes()
@@ -3570,7 +3570,7 @@ namespace Tibber.Sdk
         }
     }
 
-    public partial class RootMutationQueryBuilder : GraphQlQueryBuilder<RootMutationQueryBuilder>
+    public partial class TibberMutationQueryBuilder : GraphQlQueryBuilder<TibberMutationQueryBuilder>
     {
         private static readonly GraphQlFieldMetadata[] AllFieldMetadata =
             new[]
@@ -3584,47 +3584,47 @@ namespace Tibber.Sdk
 
         public override IReadOnlyList<GraphQlFieldMetadata> AllFields { get { return AllFieldMetadata; } }
 
-        public RootMutationQueryBuilder(string operationName = null) : base("mutation", operationName)
+        public TibberMutationQueryBuilder(string operationName = null) : base("mutation", operationName)
         {
         }
 
-        public RootMutationQueryBuilder WithParameter<T>(GraphQlQueryParameter<T> parameter)
+        public TibberMutationQueryBuilder WithParameter<T>(GraphQlQueryParameter<T> parameter)
         {
             return WithParameterInternal(parameter);
         }
 
-        public RootMutationQueryBuilder WithSendMeterReading(MeterReadingResponseQueryBuilder meterReadingResponseQueryBuilder, QueryBuilderParameter<MeterReadingInput> input, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public TibberMutationQueryBuilder WithSendMeterReading(MeterReadingResponseQueryBuilder meterReadingResponseQueryBuilder, QueryBuilderParameter<MeterReadingInput> input, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             var args = new List<QueryBuilderArgumentInfo>();
             args.Add(new QueryBuilderArgumentInfo { ArgumentName = "input", ArgumentValue = input });
             return WithObjectField("sendMeterReading", alias, meterReadingResponseQueryBuilder, new GraphQlDirective[] { include, skip }, args);
         }
 
-        public RootMutationQueryBuilder ExceptSendMeterReading()
+        public TibberMutationQueryBuilder ExceptSendMeterReading()
         {
             return ExceptField("sendMeterReading");
         }
 
-        public RootMutationQueryBuilder WithUpdateHome(HomeQueryBuilder homeQueryBuilder, QueryBuilderParameter<UpdateHomeInput> input, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public TibberMutationQueryBuilder WithUpdateHome(HomeQueryBuilder homeQueryBuilder, QueryBuilderParameter<UpdateHomeInput> input, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             var args = new List<QueryBuilderArgumentInfo>();
             args.Add(new QueryBuilderArgumentInfo { ArgumentName = "input", ArgumentValue = input });
             return WithObjectField("updateHome", alias, homeQueryBuilder, new GraphQlDirective[] { include, skip }, args);
         }
 
-        public RootMutationQueryBuilder ExceptUpdateHome()
+        public TibberMutationQueryBuilder ExceptUpdateHome()
         {
             return ExceptField("updateHome");
         }
 
-        public RootMutationQueryBuilder WithSendPushNotification(PushNotificationResponseQueryBuilder pushNotificationResponseQueryBuilder, QueryBuilderParameter<PushNotificationInput> input, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public TibberMutationQueryBuilder WithSendPushNotification(PushNotificationResponseQueryBuilder pushNotificationResponseQueryBuilder, QueryBuilderParameter<PushNotificationInput> input, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             var args = new List<QueryBuilderArgumentInfo>();
             args.Add(new QueryBuilderArgumentInfo { ArgumentName = "input", ArgumentValue = input });
             return WithObjectField("sendPushNotification", alias, pushNotificationResponseQueryBuilder, new GraphQlDirective[] { include, skip }, args);
         }
 
-        public RootMutationQueryBuilder ExceptSendPushNotification()
+        public TibberMutationQueryBuilder ExceptSendPushNotification()
         {
             return ExceptField("sendPushNotification");
         }
@@ -4031,7 +4031,7 @@ namespace Tibber.Sdk
         public PriceRating PriceRating { get; set; }
     }
 
-    public partial class ConsumptionData
+    public partial class ConsumptionEntry
     {
         public DateTimeOffset? From { get; set; }
         public DateTimeOffset? To { get; set; }
@@ -4043,7 +4043,7 @@ namespace Tibber.Sdk
         public string Currency { get; set; }
     }
 
-    public partial class ProductionData
+    public partial class ProductionEntry
     {
         public DateTimeOffset? From { get; set; }
         public DateTimeOffset? To { get; set; }
@@ -4058,26 +4058,26 @@ namespace Tibber.Sdk
     public partial class HomeConsumptionEdge
     {
         public string Cursor { get; set; }
-        public ConsumptionData Node { get; set; }
+        public ConsumptionEntry Node { get; set; }
     }
 
     public partial class HomeProductionEdge
     {
         public string Cursor { get; set; }
-        public ProductionData Node { get; set; }
+        public ProductionEntry Node { get; set; }
     }
 
     public partial class HomeConsumptionConnection
     {
         public HomeConsumptionPageInfo PageInfo { get; set; }
-        public ICollection<ConsumptionData> Nodes { get; set; }
+        public ICollection<ConsumptionEntry> Nodes { get; set; }
         public ICollection<HomeConsumptionEdge> Edges { get; set; }
     }
 
     public partial class HomeProductionConnection
     {
         public HomeProductionPageInfo PageInfo { get; set; }
-        public ICollection<ProductionData> Nodes { get; set; }
+        public ICollection<ProductionEntry> Nodes { get; set; }
         public ICollection<HomeProductionEdge> Edges { get; set; }
     }
 
@@ -4131,7 +4131,7 @@ namespace Tibber.Sdk
         public string WebsocketSubscriptionUrl { get; set; }
     }
 
-    public partial class Query
+    public partial class Tibber
     {
         public Viewer Viewer { get; set; }
     }
@@ -4180,7 +4180,7 @@ namespace Tibber.Sdk
         public int? PushedToNumberOfDevices { get; set; }
     }
 
-    public partial class RootMutation
+    public partial class TibberMutation
     {
         public MeterReadingResponse SendMeterReading { get; set; }
         public Home UpdateHome { get; set; }
