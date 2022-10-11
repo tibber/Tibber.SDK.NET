@@ -134,3 +134,12 @@ Sample output:
 2018-09-28 16:53:22 +02:00 - power: 3 195 W (average: 1 678 W); consumption since last midnight: 28,340 kWh; cost since last midnight: 13,92 NOK
 2018-09-28 16:53:24 +02:00 - power: 3 197 W (average: 1 678 W); consumption since last midnight: 28,342 kWh; cost since last midnight: 13,93 NOK
 ```
+
+Generating classes using schema introspection
+-------------
+```
+// Install nuget https://github.com/Husqvik/GraphQlClientGenerator
+var schema = await GraphQlGenerator.RetrieveSchema(HttpMethod.Get, "https://app.tibber.com/v1-beta/gql");
+var generator = new GraphQlGenerator();
+var generatedClasses = generator.Generate(schema);
+```

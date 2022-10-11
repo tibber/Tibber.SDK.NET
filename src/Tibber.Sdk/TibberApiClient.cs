@@ -98,7 +98,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>consumption entries</returns>
-        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        public async Task<ICollection<ConsumptionData>> GetHomeConsumption(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken);
             ValidateResult(result);
@@ -114,7 +114,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>consumption entries</returns>
-        public async Task<ICollection<ProductionEntry>> GetHomeProduction(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        public async Task<ICollection<ProductionData>> GetHomeProduction(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomeProduction(homeId, resolution, lastEntries).Build(), cancellationToken);
             ValidateResult(result);
@@ -216,17 +216,11 @@ namespace Tibber.Sdk
         }
     }
 
-    public abstract class GraphQlResponse<TDataContract>
-    {
-        public TDataContract Data { get; set; }
-        public ICollection<QueryError> Errors { get; set; }
-    }
-
     public class TibberApiQueryResponse : GraphQlResponse<QueryData>
     {
     }
 
-    public class TibberApiMutationResponse : GraphQlResponse<TibberMutation>
+    public class TibberApiMutationResponse : GraphQlResponse<RootMutation>
     {
     }
 
