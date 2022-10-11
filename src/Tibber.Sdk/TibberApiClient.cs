@@ -23,7 +23,7 @@ namespace Tibber.Sdk
         public const string BaseUrl = "https://api.tibber.com/v1-beta/";
         public static HttpHeaderValueCollection<ProductInfoHeaderValue> UserAgent { get; private set; }
 
-        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.4.1-beta");
+        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.5.0-beta");
 
         private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
@@ -124,7 +124,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>consumption entries</returns>
-        public async Task<ICollection<ConsumptionData>> GetHomeConsumption(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        public async Task<ICollection<ConsumptionEntry>> GetHomeConsumption(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomeConsumption(homeId, resolution, lastEntries).Build(), cancellationToken);
             ValidateResult(result);
@@ -140,7 +140,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>consumption entries</returns>
-        public async Task<ICollection<ProductionData>> GetHomeProduction(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
+        public async Task<ICollection<ProductionEntry>> GetHomeProduction(Guid homeId, EnergyResolution resolution, int? lastEntries = null, CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomeProduction(homeId, resolution, lastEntries).Build(), cancellationToken);
             ValidateResult(result);
@@ -268,7 +268,7 @@ namespace Tibber.Sdk
     {
     }
 
-    public class TibberApiMutationResponse : GraphQlResponse<RootMutation>
+    public class TibberApiMutationResponse : GraphQlResponse<TibberMutation>
     {
     }
 
