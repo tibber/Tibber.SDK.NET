@@ -32,6 +32,44 @@ namespace Tibber.Sdk
                 );
 
         /// <summary>
+        /// Builds a query for homes and features.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static TibberQueryBuilder WithHomes(this TibberQueryBuilder builder) =>
+            builder.WithAllScalarFields()
+                .WithViewer(
+                    new ViewerQueryBuilder()
+                        .WithAllScalarFields()
+                        .WithHomes(
+                            new HomeQueryBuilder()
+                                .WithAllScalarFields()
+                                .WithFeatures(new HomeFeaturesQueryBuilder()
+                                    .WithAllFields())
+                        )
+                );
+
+        /// <summary>
+        /// Builds a query for home and features.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="homeId"></param>
+        /// <returns></returns>
+        public static TibberQueryBuilder WithHomeById(this TibberQueryBuilder builder, Guid homeId) =>
+            builder.WithAllScalarFields()
+                .WithViewer(
+                    new ViewerQueryBuilder()
+                        .WithAllScalarFields()
+                        .WithHome(
+                            new HomeQueryBuilder()
+                                .WithAllScalarFields()
+                                .WithFeatures(new HomeFeaturesQueryBuilder()
+                                    .WithAllFields()),
+                            homeId
+                        )
+                );
+
+        /// <summary>
         /// Builds a query for home consumption.
         /// </summary>
         /// <param name="builder"></param>

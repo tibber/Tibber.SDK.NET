@@ -8,7 +8,7 @@ Installation
 -------------
 Using nuget package manager:
 ```
-Install-Package Tibber.Sdk -Version 0.4.1-beta
+Install-Package Tibber.Sdk -Version 0.5.0-beta
 ```
 
 Authorization
@@ -133,4 +133,18 @@ Sample output:
 2018-09-28 16:53:20 +02:00 - power: 3 200 W (average: 1 678 W); consumption since last midnight: 28,338 kWh; cost since last midnight: 13,92 NOK
 2018-09-28 16:53:22 +02:00 - power: 3 195 W (average: 1 678 W); consumption since last midnight: 28,340 kWh; cost since last midnight: 13,92 NOK
 2018-09-28 16:53:24 +02:00 - power: 3 197 W (average: 1 678 W); consumption since last midnight: 28,342 kWh; cost since last midnight: 13,93 NOK
+```
+
+Generating classes using schema introspection
+-------------
+```
+// Install nuget https://github.com/Husqvik/GraphQlClientGenerator
+var schema = await GraphQlGenerator.RetrieveSchema(HttpMethod.Get, "https://app.tibber.com/v1-beta/gql");
+var configuration = new GraphQlGeneratorConfiguration();
+configuration.CustomClassNameMapping.Add("Consumption", "ConsumptionEntry");
+configuration.CustomClassNameMapping.Add("Production", "ProductionEntry");
+configuration.CustomClassNameMapping.Add("RootMutation", "TibberMutation");
+configuration.CustomClassNameMapping.Add("Query", "Tibber");
+var generator = new GraphQlGenerator(configuration);
+var generatedClasses = generator.Generate(schema);
 ```

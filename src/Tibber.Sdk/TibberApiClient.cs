@@ -20,10 +20,9 @@ namespace Tibber.Sdk
     /// </summary>
     public class TibberApiClient : IDisposable
     {
-        public const string BaseUrl = "https://api.tibber.com/v1-beta/";
         public static HttpHeaderValueCollection<ProductInfoHeaderValue> UserAgent { get; private set; }
 
-        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.4.1-beta");
+        private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.5.0-beta");
 
         private static readonly SemaphoreSlim Semaphore = new(1);
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(59);
@@ -37,27 +36,30 @@ namespace Tibber.Sdk
 
         private static readonly JsonSerializer Serializer = JsonSerializer.Create(JsonSerializerSettings);
 
-        private readonly RealTimeMeasurementListener _realTimeMeasurementListener;
+        private RealTimeMeasurementListener _realTimeMeasurementListener;
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
+        private readonly string _baseUrl;
 
-        public TibberApiClient(string accessToken, ProductInfoHeaderValue userAgent = null, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null)
+        public TibberApiClient(string accessToken, ProductInfoHeaderValue userAgent = null, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null, string baseUrl = null)
         {
             if (String.IsNullOrWhiteSpace(accessToken))
                 throw new ArgumentException("access token required", nameof(accessToken));
 
             _accessToken = accessToken;
+            _baseUrl = baseUrl ?? "https://api.tibber.com/v1-beta/gql";
 
             messageHandler ??= new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
 
             _httpClient =
                 new HttpClient(messageHandler)
                 {
-                    BaseAddress = new Uri(BaseUrl),
+                    BaseAddress = new Uri(_baseUrl),
                     Timeout = timeout ?? DefaultTimeout,
                     DefaultRequestHeaders =
                     {
+                        Authorization = new AuthenticationHeaderValue("Bearer", _accessToken),
                         AcceptEncoding = { new StringWithQualityHeaderValue("gzip") }
                     }
                 };
@@ -66,8 +68,6 @@ namespace Tibber.Sdk
             if (userAgent is not null)
                 UserAgent.Add(userAgent);
             UserAgent.Add(TibberSdkUserAgent);
-
-            _realTimeMeasurementListener = new RealTimeMeasurementListener(accessToken);
         }
 
         public void Dispose()
@@ -85,6 +85,33 @@ namespace Tibber.Sdk
         public async Task<TibberApiQueryResponse> GetBasicData(CancellationToken cancellationToken = default)
         {
             var result = await Query(new TibberQueryBuilder().WithHomesAndSubscriptions().Build(), cancellationToken);
+            ValidateResult(result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets homes and features.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns></returns>
+        public async Task<TibberApiQueryResponse> GetHomes(CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomes().Build(), cancellationToken);
+            ValidateResult(result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets home and features by home id.
+        /// </summary>
+        /// <param name="homeId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns></returns>
+        public async Task<TibberApiQueryResponse> GetHomeById(Guid homeId, CancellationToken cancellationToken = default)
+        {
+            var result = await Query(new TibberQueryBuilder().WithHomeById(homeId).Build(), cancellationToken);
             ValidateResult(result);
             return result;
         }
@@ -141,8 +168,26 @@ namespace Tibber.Sdk
         public Task<TibberApiMutationResponse> Mutation(string mutation, CancellationToken cancellationToken = default) =>
             Request<TibberApiMutationResponse>(mutation, cancellationToken);
 
+
+        public async Task<TibberApiQueryResponse> ValidateRealtimeDevice(CancellationToken cancellationToken = default)
+        {
+            var homes = await GetHomes(cancellationToken);
+
+            if (!(homes?.Data?.Viewer?.Homes?.Any() ?? false))
+                throw new ApplicationException("No homes found");
+
+            if (!(homes.Data?.Viewer?.Homes?.Any(h => h.Features?.RealTimeConsumptionEnabled ?? false) ?? false))
+                throw new ApplicationException("No homes with real time consumption devices found");
+
+            var websocketSubscriptionUrl = homes.Data?.Viewer?.WebsocketSubscriptionUrl;
+            if (websocketSubscriptionUrl is null)
+                throw new ApplicationException("Unable to retrieve web socket subscription url");
+
+            return homes;
+        }
+
         /// <summary>
-        /// Starts real-time measurement listener. You must have active Tibber Pulse device to get any values.
+        /// Checks the home has real-time measurement device and starts listener. You must have active Tibber Pulse device to get any values.
         /// </summary>
         /// <param name="homeId"></param>
         /// <param name="cancellationToken"></param>
@@ -150,7 +195,13 @@ namespace Tibber.Sdk
         /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
         public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
         {
+            var homes = await ValidateRealtimeDevice(cancellationToken);
+            var websocketSubscriptionUrl = homes.Data.Viewer.WebsocketSubscriptionUrl;
+
             await Semaphore.WaitAsync(cancellationToken);
+
+            _realTimeMeasurementListener ??=
+                new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
 
             try
             {
@@ -182,23 +233,21 @@ namespace Tibber.Sdk
 
         private async Task<TResult> Request<TResult>(string query, CancellationToken cancellationToken)
         {
-            var relativeUri = $"gql?token={_accessToken}";
-
             var requestStart = DateTimeOffset.UtcNow;
 
             HttpResponseMessage response;
 
             try
             {
-                response = await _httpClient.PostAsync(relativeUri, JsonContent(new { query }), cancellationToken);
+                response = await _httpClient.PostAsync(String.Empty, JsonContent(new { query }), cancellationToken);
             }
             catch (Exception exception)
             {
-                throw new TibberApiHttpException(new Uri(_httpClient.BaseAddress, relativeUri), HttpMethod.Post, DateTimeOffset.Now - requestStart, exception.Message, exception);
+                throw new TibberApiHttpException(_httpClient.BaseAddress, HttpMethod.Post, DateTimeOffset.Now - requestStart, exception.Message, exception);
             }
 
             if (!response.IsSuccessStatusCode)
-                throw await TibberApiHttpException.Create(new Uri(new Uri(BaseUrl), relativeUri), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+                throw await TibberApiHttpException.Create(new Uri(_baseUrl), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
 
             using var stream = await response.Content.ReadAsStreamAsync();
             using var streamReader = new StreamReader(stream);
@@ -214,12 +263,6 @@ namespace Tibber.Sdk
             if (response.Errors is not null && response.Errors.Any())
                 throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, response.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
         }
-    }
-
-    public abstract class GraphQlResponse<TDataContract>
-    {
-        public TDataContract Data { get; set; }
-        public ICollection<QueryError> Errors { get; set; }
     }
 
     public class TibberApiQueryResponse : GraphQlResponse<QueryData>
