@@ -20,7 +20,6 @@ namespace Tibber.Sdk
     /// </summary>
     public class TibberApiClient : IDisposable
     {
-        public const string BaseUrl = "https://api.tibber.com/v1-beta/gql";
         public static HttpHeaderValueCollection<ProductInfoHeaderValue> UserAgent { get; private set; }
 
         private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.5.0-beta");
@@ -41,20 +40,22 @@ namespace Tibber.Sdk
 
         private readonly HttpClient _httpClient;
         private readonly string _accessToken;
+        private readonly string _baseUrl;
 
-        public TibberApiClient(string accessToken, ProductInfoHeaderValue userAgent = null, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null)
+        public TibberApiClient(string accessToken, ProductInfoHeaderValue userAgent = null, HttpMessageHandler messageHandler = null, TimeSpan? timeout = null, string baseUrl = null)
         {
             if (String.IsNullOrWhiteSpace(accessToken))
                 throw new ArgumentException("access token required", nameof(accessToken));
 
             _accessToken = accessToken;
+            _baseUrl = baseUrl ?? "https://api.tibber.com/v1-beta/gql";
 
             messageHandler ??= new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
 
             _httpClient =
                 new HttpClient(messageHandler)
                 {
-                    BaseAddress = new Uri(BaseUrl),
+                    BaseAddress = new Uri(_baseUrl),
                     Timeout = timeout ?? DefaultTimeout,
                     DefaultRequestHeaders =
                     {
@@ -246,7 +247,7 @@ namespace Tibber.Sdk
             }
 
             if (!response.IsSuccessStatusCode)
-                throw await TibberApiHttpException.Create(new Uri(BaseUrl), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
+                throw await TibberApiHttpException.Create(new Uri(_baseUrl), HttpMethod.Post, response, DateTimeOffset.Now - requestStart).ConfigureAwait(false);
 
             using var stream = await response.Content.ReadAsStreamAsync();
             using var streamReader = new StreamReader(stream);
