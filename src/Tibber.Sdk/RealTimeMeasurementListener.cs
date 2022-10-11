@@ -458,16 +458,15 @@ namespace Tibber.Sdk
 
         private static int GetDelaySeconds(int failures)
         {
-            if (failures == 0)
-                return 0;
+            // Jitter of 5 to 60 seconds
+            var jitter = new Random().Next(5, 60);
 
-            if (failures == 1)
-                return 1;
+            // Exponential backoff
+            var delay = Math.Pow(failures, 2);
 
-            if (failures <= 3)
-                return 5;
-
-            return 60;
+            // Max one day 60 * 60 * 24
+            const double oneDayInSeconds = (double)60 * 60 * 24;
+            return jitter + (int)Math.Min(delay, oneDayInSeconds);
         }
 
         private class WebSocketConnectionInitMessage
