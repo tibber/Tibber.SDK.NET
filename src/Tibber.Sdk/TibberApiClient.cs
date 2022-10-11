@@ -20,7 +20,7 @@ namespace Tibber.Sdk
     /// </summary>
     public class TibberApiClient : IDisposable
     {
-        public const string BaseUrl = "https://api.tibber.com/v1-beta/";
+        public const string BaseUrl = "https://api.tibber.com/v1-beta/gql";
         public static HttpHeaderValueCollection<ProductInfoHeaderValue> UserAgent { get; private set; }
 
         private static readonly ProductInfoHeaderValue TibberSdkUserAgent = new("Tibber-SDK.NET", "0.5.0-beta");
