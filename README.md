@@ -137,7 +137,7 @@ Sample output:
 
 Generating classes using schema introspection
 -------------
-```
+```csharp
 // Install nuget https://github.com/Husqvik/GraphQlClientGenerator
 var schema = await GraphQlGenerator.RetrieveSchema(HttpMethod.Get, "https://app.tibber.com/v1-beta/gql");
 var configuration = new GraphQlGeneratorConfiguration();
