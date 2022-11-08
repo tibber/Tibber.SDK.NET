@@ -22,41 +22,44 @@ using Tibber.Sdk;
 ```
 
 ```csharp
-// Please set user agent so we can track different client implementations
-var userAgent = new ProductInfoHeaderValue("My-home-automation-system", "1.2"); 
+static async Task GetDataFromTibber(string accessToken)
+{
+    // Please set user agent so we can track different client implementations
+    var userAgent = new ProductInfoHeaderValue("My-home-automation-system", "1.2");
 
-var client = new TibberApiClient(accessToken, userAgent);
+    var client = new TibberApiClient(accessToken, userAgent);
 
-var basicData = await client.GetBasicData();
-var homeId = basicData.Data.Viewer.Homes.First().Id.Value;
-var consumption = await client.GetHomeConsumption(homeId, EnergyResolution.Monthly);
+    var basicData = await client.GetBasicData();
+    var homeId = basicData.Data.Viewer.Homes.First().Id.Value;
+    var consumption = await client.GetHomeConsumption(homeId, EnergyResolution.Monthly);
 
-var customQueryBuilder =
-    new TibberQueryBuilder()
-        .WithAllScalarFields()
-        .WithViewer(
-            new ViewerQueryBuilder()
-                .WithAllScalarFields()
-                .WithAccountType()
-                .WithHome(
-                    new HomeQueryBuilder()
-                        .WithAllScalarFields()
-                        .WithAddress(new AddressQueryBuilder().WithAllFields())
-                        .WithCurrentSubscription(
-                            new SubscriptionQueryBuilder()
-                                .WithAllScalarFields()
-                                .WithSubscriber(new LegalEntityQueryBuilder().WithAllFields())
-                                .WithPriceInfo(new PriceInfoQueryBuilder().WithCurrent(new PriceQueryBuilder().WithAllFields()))
-                        )
-                        .WithOwner(new LegalEntityQueryBuilder().WithAllFields())
-                        .WithFeatures(new HomeFeaturesQueryBuilder().WithAllFields())
-                        .WithMeteringPointData(new MeteringPointDataQueryBuilder().WithAllFields()),
-                    homeId
-                )
-        );
+    var customQueryBuilder =
+        new TibberQueryBuilder()
+            .WithAllScalarFields()
+            .WithViewer(
+                new ViewerQueryBuilder()
+                    .WithAllScalarFields()
+                    .WithAccountType()
+                    .WithHome(
+                        new HomeQueryBuilder()
+                            .WithAllScalarFields()
+                            .WithAddress(new AddressQueryBuilder().WithAllFields())
+                            .WithCurrentSubscription(
+                                new SubscriptionQueryBuilder()
+                                    .WithAllScalarFields()
+                                    .WithSubscriber(new LegalEntityQueryBuilder().WithAllFields())
+                                    .WithPriceInfo(new PriceInfoQueryBuilder().WithCurrent(new PriceQueryBuilder().WithAllFields()))
+                            )
+                            .WithOwner(new LegalEntityQueryBuilder().WithAllFields())
+                            .WithFeatures(new HomeFeaturesQueryBuilder().WithAllFields())
+                            .WithMeteringPointData(new MeteringPointDataQueryBuilder().WithAllFields()),
+                        homeId
+                    )
+            );
 
-var customQuery = customQueryBuilder.Build(); // produces plain GraphQL query text
-var result = await client.Query(customQuery);
+    var customQuery = customQueryBuilder.Build(); // produces plain GraphQL query text
+    var result = await client.Query(customQuery);
+}
 ```
 
 Extension methods
