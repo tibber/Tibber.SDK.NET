@@ -135,7 +135,7 @@ listener.Subscribe(new RealTimeMeasurementObserver());
 await Task.Delay(TimeSpan.FromSeconds(6));
 
 // Stop listening
-await client.StopRealTimeMeasurementListener(homeId.Value);
+await client.StopRealTimeMeasurementListener(homeId);
 ```
 
 Sample output:
