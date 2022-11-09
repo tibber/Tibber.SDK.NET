@@ -186,8 +186,11 @@ namespace Tibber.Sdk
                 await _semaphore.WaitAsync(cancellationToken);
         }
 
-        private Task UnsubscribeStream(int subscriptionId, CancellationToken cancellationToken) =>
-            ExecuteStreamRequest($@"{{""type"":""stop"",""id"":{subscriptionId}}}", cancellationToken);
+        private async Task UnsubscribeStream(int subscriptionId, CancellationToken cancellationToken)
+        {
+            Trace.WriteLine($"unsubscribe subscription with id {subscriptionId}");
+            await ExecuteStreamRequest($@"{{""type"":""complete"",""id"":{subscriptionId}}}", cancellationToken);
+        }
 
         private Task ExecuteStreamRequest(string request, CancellationToken cancellationToken)
         {

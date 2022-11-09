@@ -8,7 +8,7 @@ Installation
 -------------
 Using nuget package manager:
 ```
-Install-Package Tibber.Sdk -Version 0.5.0-beta
+Install-Package Tibber.Sdk -Version 0.5.1-beta
 ```
 
 Authorization
@@ -122,13 +122,20 @@ public class RealTimeMeasurementObserver : IObserver<RealTimeMeasurement>
 }
 ```
 
-Listener initialization:
+Listener usage:
 ```csharp
+// Initialize
 var userAgent = new ProductInfoHeaderValue("My-home-automation-system", "1.2");
 var client = new TibberApiClient(accessToken, userAgent);
 var homeId = Guid.Parse("c70dcbe5-4485-4821-933d-a8a86452737b");
 var listener = await client.StartRealTimeMeasurementListener(homeId);
 listener.Subscribe(new RealTimeMeasurementObserver());
+
+// Listen for a bit
+await Task.Delay(TimeSpan.FromSeconds(6));
+
+// Stop listening
+await client.StopRealTimeMeasurementListener(homeId.Value);
 ```
 
 Sample output:
