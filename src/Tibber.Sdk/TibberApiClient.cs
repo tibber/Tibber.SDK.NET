@@ -72,7 +72,7 @@ namespace Tibber.Sdk
 
         public void Dispose()
         {
-            _realTimeMeasurementListener.Dispose();
+            _realTimeMeasurementListener?.Dispose();
             _httpClient.Dispose();
         }
 
