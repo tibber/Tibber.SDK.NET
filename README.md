@@ -132,7 +132,9 @@ var listener = await client.StartRealTimeMeasurementListener(homeId);
 listener.Subscribe(new RealTimeMeasurementObserver());
 
 // Listen for a bit
-await Task.Delay(TimeSpan.FromSeconds(6));
+await Task.Delay(TimeSpan.FromSeconds(600));
+
+Console.WriteLine("Stop listening");
 
 // Stop listening
 await client.StopRealTimeMeasurementListener(homeId);
