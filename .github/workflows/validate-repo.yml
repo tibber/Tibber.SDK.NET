@@ -1,0 +1,12 @@
+name: Tibber Repo Validator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  validation:
+    uses: tibber/github-actions/.github/workflows/validate-repo.yaml@main
