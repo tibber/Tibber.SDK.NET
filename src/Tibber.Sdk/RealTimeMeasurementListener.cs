@@ -450,9 +450,9 @@ namespace Tibber.Sdk
             {
                 try
                 {
-                    var delay = GetDelaySeconds(failures);
-                    Trace.WriteLine($"retrying to connect in {delay} seconds");
-                    await Task.Delay(TimeSpan.FromSeconds(delay), _cancellationTokenSource.Token);
+                    var delay = GetDelay(failures);
+                    Trace.WriteLine($"retrying to connect in {delay.TotalSeconds} seconds");
+                    await Task.Delay(delay, _cancellationTokenSource.Token);
 
                     Trace.WriteLine("check there is a valid real time device");
                     var homes = await _tibberApiClient.ValidateRealtimeDevice();
@@ -476,17 +476,21 @@ namespace Tibber.Sdk
             ResubscribeStreams(
                 c =>
                 {
-                    var sinceLastMessageMs = (now - c.LastMessageReceivedAt).TotalMilliseconds;
-                    if (sinceLastMessageMs <= StreamReSubscriptionCheckPeriodMs)
+                    var sinceLastMessageMs = (now - c.LastMessageReceivedAt).TotalMilliseconds;                    
+                    if (sinceLastMessageMs <= GetDelay(c.ReconnectionAttempts).TotalMilliseconds)
                         return false;
 
-                    Trace.WriteLine($"home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; re-initialize data stream");
-                    c.LastMessageReceivedAt = now;
+                    Trace.WriteLine($"{now:yyyy-MM-dd HH:mm:ss.fff zzz} home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; re-initialize data stream");
+
+                    if (c.LastMessageReceivedAt < c.LastReconnectionAttemptAt)
+                        c.ReconnectionAttempts++;
+                    c.LastReconnectionAttemptAt = now;
+
                     return true;
                 });
         }
 
-        private static int GetDelaySeconds(int failures)
+        private static TimeSpan GetDelay(int failures)
         {
             // Jitter of 5 to 60 seconds
             var jitter = Random.Next(5, 60);
@@ -496,7 +500,7 @@ namespace Tibber.Sdk
 
             // Max one day 60 * 60 * 24
             const double oneDayInSeconds = (double)60 * 60 * 24;
-            return jitter + (int)Math.Min(delay, oneDayInSeconds);
+            return TimeSpan.FromSeconds(jitter + (int)Math.Min(delay, oneDayInSeconds));
         }
 
         private class WebSocketConnectionInitMessage
@@ -536,6 +540,8 @@ namespace Tibber.Sdk
             public readonly List<IObserver<RealTimeMeasurement>> Observers = new();
             public HomeRealTimeMeasurementObservable Observable;
             public DateTimeOffset LastMessageReceivedAt = DateTimeOffset.MaxValue;
+            public DateTimeOffset LastReconnectionAttemptAt = DateTimeOffset.MaxValue;
+            public int ReconnectionAttempts = 0;
         }
 
         private class Unsubscriber : IDisposable
