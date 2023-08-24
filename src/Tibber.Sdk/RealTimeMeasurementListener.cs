@@ -324,6 +324,7 @@ namespace Tibber.Sdk
                         continue;
 
                     homeStreamObserverCollection.LastMessageReceivedAt = DateTimeOffset.UtcNow;
+                    homeStreamObserverCollection.ReconnectionAttempts = 0;
 
                     foreach (var message in measurementGroup)
                     {
@@ -476,14 +477,21 @@ namespace Tibber.Sdk
             ResubscribeStreams(
                 c =>
                 {
-                    var sinceLastMessageMs = (now - c.LastMessageReceivedAt).TotalMilliseconds;                    
-                    if (sinceLastMessageMs <= GetDelay(c.ReconnectionAttempts).TotalMilliseconds)
+                    var sinceLastMessageMs = (now - c.LastMessageReceivedAt).TotalMilliseconds;
+                    if (sinceLastMessageMs <= StreamReSubscriptionCheckPeriodMs)
                         return false;
 
-                    Trace.WriteLine($"{now:yyyy-MM-dd HH:mm:ss.fff zzz} home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; re-initialize data stream");
+                    // Data not received during past minute; delay exponentially and then resubscribe
+                    var sinceLastReconnectionMs = (now - c.LastReconnectionAttemptAt).TotalMilliseconds;
+                    var delay = GetDelay(c.ReconnectionAttempts);
+                    if (sinceLastReconnectionMs <= delay.TotalMilliseconds)
+                    {
+                        Trace.WriteLine($"{now:yyyy-MM-dd HH:mm:ss.fff zzz} home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; reconnection attempts {c.ReconnectionAttempts}; resubscription delay {delay.TotalSeconds}s not passed yet");
+                        return false;
+                    }
 
-                    if (c.LastMessageReceivedAt < c.LastReconnectionAttemptAt)
-                        c.ReconnectionAttempts++;
+                    Trace.WriteLine($"{now:yyyy-MM-dd HH:mm:ss.fff zzz} home {c.Observable.HomeId} subscription {c.Observable.SubscriptionId}: no data received during last {sinceLastMessageMs:N0} ms; reconnection attempts {c.ReconnectionAttempts}; re-initialize data stream");
+                    c.ReconnectionAttempts++;
                     c.LastReconnectionAttemptAt = now;
 
                     return true;
@@ -540,7 +548,7 @@ namespace Tibber.Sdk
             public readonly List<IObserver<RealTimeMeasurement>> Observers = new();
             public HomeRealTimeMeasurementObservable Observable;
             public DateTimeOffset LastMessageReceivedAt = DateTimeOffset.MaxValue;
-            public DateTimeOffset LastReconnectionAttemptAt = DateTimeOffset.MaxValue;
+            public DateTimeOffset LastReconnectionAttemptAt = DateTimeOffset.MinValue;
             public int ReconnectionAttempts = 0;
         }
 
