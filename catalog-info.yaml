@@ -4,8 +4,9 @@ metadata:
   name: Tibber.SDK.NET
   annotations:
     github.com/project-slug: tibber/Tibber.SDK.NET
+    circleci.com/project-slug: gh/tibber/Tibber.SDK.NET
   tags:
-    - net
+  - net
 spec:
   type: library
   lifecycle: production
