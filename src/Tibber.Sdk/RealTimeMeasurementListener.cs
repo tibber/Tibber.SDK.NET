@@ -81,7 +81,7 @@ namespace Tibber.Sdk
             _streamRestartTimer = new Timer(CheckDataStreamAlive, null, -1, 0);
         }
 
-        public async Task<IObservable<RealTimeMeasurement>> SubscribeHome(Guid homeId, CancellationToken cancellationToken)
+        public async Task<IObservable<RealTimeMeasurement>> SubscribeHome(Guid homeId, CancellationToken cancellationToken, RootSubscriptionQueryBuilder queryBuilder = null)
         {
             CheckObjectNotDisposed();
 
@@ -113,7 +113,7 @@ namespace Tibber.Sdk
                     _streamRestartTimer.Change(StreamReSubscriptionCheckPeriodMs, 5000);
                 }
 
-                await SubscribeStream(homeId, subscriptionId, cancellationToken);
+                await SubscribeStream(homeId, subscriptionId, cancellationToken, queryBuilder);
 
                 if (!observable.IsInitialized)
                     throw new InvalidOperationException($"real-time measurement subscription initialization failed{(observable.ErrorMessage is null ? null : $": {observable.ErrorMessage}")}");
@@ -178,14 +178,13 @@ namespace Tibber.Sdk
             await SubscribeStream(homeId, subscriptionId, cancellationToken);
         }
 
-        private async Task SubscribeStream(Guid homeId, int subscriptionId, CancellationToken cancellationToken)
+        private async Task SubscribeStream(Guid homeId, int subscriptionId, CancellationToken cancellationToken, RootSubscriptionQueryBuilder queryBuilder = null)
         {
             Trace.WriteLine($"subscribe to home id {homeId} with subscription id {subscriptionId}");
 
-            await ExecuteStreamRequest(
-                //$@"{{""payload"":{{""query"":""subscription{{testMeasurement(count:2, complete:false){{timestamp,power,powerReactive,powerProduction,powerProductionReactive,accumulatedConsumption,accumulatedConsumptionLastHour,accumulatedProduction,accumulatedProductionLastHour,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,minPowerProduction,maxPowerProduction,voltagePhase1,voltagePhase2,voltagePhase3,currentL1,currentL2,currentL3,lastMeterConsumption,lastMeterProduction,powerFactor,signalStrength}}}}"",""variables"":{{}},""extensions"":{{}}}},""type"":""subscribe"",""id"":""{subscriptionId}""}}",
-                $@"{{""payload"":{{""query"":""subscription{{liveMeasurement(homeId:\""{homeId}\""){{timestamp,power,powerReactive,powerProduction,powerProductionReactive,accumulatedConsumption,accumulatedConsumptionLastHour,accumulatedProduction,accumulatedProductionLastHour,accumulatedCost,accumulatedReward,currency,minPower,averagePower,maxPower,minPowerProduction,maxPowerProduction,voltagePhase1,voltagePhase2,voltagePhase3,currentL1,currentL2,currentL3,lastMeterConsumption,lastMeterProduction,powerFactor,signalStrength}}}}"",""variables"":{{}},""extensions"":{{}}}},""type"":""subscribe"",""id"":""{subscriptionId}""}}",
-                cancellationToken);
+            queryBuilder ??= new RootSubscriptionQueryBuilder().WithLiveMeasurement(new LiveMeasurementQueryBuilder().WithAllScalarFields(), homeId);
+            var query = queryBuilder.Build().Replace(@"""", @"\""");
+            await ExecuteStreamRequest($@"{{""payload"":{{""query"":""{query}"",""variables"":{{}},""extensions"":{{}}}},""type"":""subscribe"",""id"":""{subscriptionId}""}}", cancellationToken);
 
             if (cancellationToken == default)
                 await _semaphore.WaitAsync(30000);

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35806.99 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tibber.Sdk", "src\Tibber.Sdk\Tibber.Sdk.csproj", "{9DF60E41-EC62-4770-BA8D-8E568237CB0C}"
 EndProject
@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E4193BD6-B2F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1D361030-CE23-4956-8B5C-865C1AFD48B9}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		License.md = License.md
 		NuGet.config = NuGet.config
 		README.md = README.md

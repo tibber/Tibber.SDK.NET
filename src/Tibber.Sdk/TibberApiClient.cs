@@ -190,13 +190,14 @@ namespace Tibber.Sdk
         /// Checks the home has real-time measurement device and starts listener. You must have active Tibber Pulse device to get any values.
         /// </summary>
         /// <param name="homeId"></param>
+        /// <param name="websocketSubscriptionUrl"></param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
-        public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
+        public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, string websocketSubscriptionUrl = null, CancellationToken cancellationToken = default)
         {
             var homes = await ValidateRealtimeDevice(cancellationToken);
-            var websocketSubscriptionUrl = homes.Data.Viewer.WebsocketSubscriptionUrl;
+            websocketSubscriptionUrl ??= homes.Data.Viewer.WebsocketSubscriptionUrl;
 
             await Semaphore.WaitAsync(cancellationToken);
 
@@ -211,6 +212,22 @@ namespace Tibber.Sdk
             {
                 Semaphore.Release();
             }
+        }
+
+        /// <summary>
+        /// Starts a test listener for ensuring connectivity with the server.
+        /// </summary>
+        /// <param name="messagesToListen">Number of messages the server should emit</param>
+        /// <param name="websocketSubscriptionUrl">Pass to override websocket server url</param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
+        public async Task<IObservable<RealTimeMeasurement>> StartTestMeasurementListener(int messagesToListen, string websocketSubscriptionUrl, CancellationToken cancellationToken = default)
+        {
+            var realTimeMeasurementListener = new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
+
+            var builder = new RootSubscriptionQueryBuilder().WithTestMeasurement(new LiveMeasurementQueryBuilder().WithAllScalarFields(), messagesToListen, true);
+            return await realTimeMeasurementListener.SubscribeHome(Guid.NewGuid(), cancellationToken, builder);
         }
 
         /// <summary>
