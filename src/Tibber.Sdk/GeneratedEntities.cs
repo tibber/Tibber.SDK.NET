@@ -3725,7 +3725,7 @@ namespace Tibber.Sdk
         }
     }
 
-    public partial class RootSubscriptionQueryBuilder : GraphQlQueryBuilder<RootSubscriptionQueryBuilder>
+    public partial class TibberApiSubscriptionQueryBuilder : GraphQlQueryBuilder<TibberApiSubscriptionQueryBuilder>
     {
         private static readonly GraphQlFieldMetadata[] AllFieldMetadata =
             new[]
@@ -3738,28 +3738,28 @@ namespace Tibber.Sdk
 
         public override IReadOnlyList<GraphQlFieldMetadata> AllFields { get { return AllFieldMetadata; } }
 
-        public RootSubscriptionQueryBuilder(string operationName = null) : base("subscription", operationName)
+        public TibberApiSubscriptionQueryBuilder(string operationName = null) : base("subscription", operationName)
         {
         }
 
-        public RootSubscriptionQueryBuilder WithParameter<T>(GraphQlQueryParameter<T> parameter)
+        public TibberApiSubscriptionQueryBuilder WithParameter<T>(GraphQlQueryParameter<T> parameter)
         {
             return WithParameterInternal(parameter);
         }
 
-        public RootSubscriptionQueryBuilder WithLiveMeasurement(LiveMeasurementQueryBuilder liveMeasurementQueryBuilder, QueryBuilderParameter<Guid> homeId, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public TibberApiSubscriptionQueryBuilder WithLiveMeasurement(LiveMeasurementQueryBuilder liveMeasurementQueryBuilder, QueryBuilderParameter<Guid> homeId, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             var args = new List<QueryBuilderArgumentInfo>();
             args.Add(new QueryBuilderArgumentInfo { ArgumentName = "homeId", ArgumentValue = homeId });
             return WithObjectField("liveMeasurement", alias, liveMeasurementQueryBuilder, new GraphQlDirective[] { include, skip }, args);
         }
 
-        public RootSubscriptionQueryBuilder ExceptLiveMeasurement()
+        public TibberApiSubscriptionQueryBuilder ExceptLiveMeasurement()
         {
             return ExceptField("liveMeasurement");
         }
 
-        public RootSubscriptionQueryBuilder WithTestMeasurement(LiveMeasurementQueryBuilder liveMeasurementQueryBuilder, QueryBuilderParameter<int?> count = null, QueryBuilderParameter<bool?> complete = null, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public TibberApiSubscriptionQueryBuilder WithTestMeasurement(LiveMeasurementQueryBuilder liveMeasurementQueryBuilder, QueryBuilderParameter<int?> count = null, QueryBuilderParameter<bool?> complete = null, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
             var args = new List<QueryBuilderArgumentInfo>();
             if (count != null)
@@ -3771,7 +3771,7 @@ namespace Tibber.Sdk
             return WithObjectField("testMeasurement", alias, liveMeasurementQueryBuilder, new GraphQlDirective[] { include, skip }, args);
         }
 
-        public RootSubscriptionQueryBuilder ExceptTestMeasurement()
+        public TibberApiSubscriptionQueryBuilder ExceptTestMeasurement()
         {
             return ExceptField("testMeasurement");
         }
@@ -4279,7 +4279,7 @@ namespace Tibber.Sdk
         public PushNotificationResponse SendPushNotification { get; set; }
     }
 
-    public partial class RootSubscription
+    public partial class TibberApiSubscription
     {
         public LiveMeasurement LiveMeasurement { get; set; }
         public LiveMeasurement TestMeasurement { get; set; }
