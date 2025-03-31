@@ -52,17 +52,12 @@ namespace Tibber.Sdk
 
             messageHandler ??= new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
 
-            _httpClient =
-                new HttpClient(messageHandler)
-                {
-                    BaseAddress = new Uri(_baseUrl),
-                    Timeout = timeout ?? DefaultTimeout,
-                    DefaultRequestHeaders =
-                    {
-                        Authorization = new AuthenticationHeaderValue("Bearer", _accessToken),
-                        AcceptEncoding = { new StringWithQualityHeaderValue("gzip") }
-                    }
-                };
+            _httpClient = new HttpClient(messageHandler)
+            {
+                BaseAddress = new Uri(_baseUrl),
+                Timeout = timeout ?? DefaultTimeout,
+                DefaultRequestHeaders = { Authorization = new AuthenticationHeaderValue("Bearer", _accessToken), AcceptEncoding = { new StringWithQualityHeaderValue("gzip") } }
+            };
 
             UserAgent = _httpClient.DefaultRequestHeaders.UserAgent;
             if (userAgent is not null)
@@ -155,8 +150,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
-        public Task<TibberApiQueryResponse> Query(string query, CancellationToken cancellationToken = default) =>
-            Request<TibberApiQueryResponse>(query, cancellationToken);
+        public Task<TibberApiQueryResponse> Query(string query, CancellationToken cancellationToken = default) => Request<TibberApiQueryResponse>(query, cancellationToken);
 
         /// <summary>
         /// Executes raw GraphQL mutation.
@@ -165,9 +159,7 @@ namespace Tibber.Sdk
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns></returns>
-        public Task<TibberApiMutationResponse> Mutation(string mutation, CancellationToken cancellationToken = default) =>
-            Request<TibberApiMutationResponse>(mutation, cancellationToken);
-
+        public Task<TibberApiMutationResponse> Mutation(string mutation, CancellationToken cancellationToken = default) => Request<TibberApiMutationResponse>(mutation, cancellationToken);
 
         public async Task<TibberApiQueryResponse> ValidateRealtimeDevice(CancellationToken cancellationToken = default)
         {
@@ -190,18 +182,18 @@ namespace Tibber.Sdk
         /// Checks the home has real-time measurement device and starts listener. You must have active Tibber Pulse device to get any values.
         /// </summary>
         /// <param name="homeId"></param>
+        /// <param name="websocketSubscriptionUrl"></param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="TibberApiHttpException"></exception>
         /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
-        public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, CancellationToken cancellationToken = default)
+        public async Task<IObservable<RealTimeMeasurement>> StartRealTimeMeasurementListener(Guid homeId, string websocketSubscriptionUrl = null, CancellationToken cancellationToken = default)
         {
             var homes = await ValidateRealtimeDevice(cancellationToken);
-            var websocketSubscriptionUrl = homes.Data.Viewer.WebsocketSubscriptionUrl;
+            websocketSubscriptionUrl ??= homes.Data.Viewer.WebsocketSubscriptionUrl;
 
             await Semaphore.WaitAsync(cancellationToken);
 
-            _realTimeMeasurementListener ??=
-                new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
+            _realTimeMeasurementListener ??= new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
 
             try
             {
@@ -211,6 +203,22 @@ namespace Tibber.Sdk
             {
                 Semaphore.Release();
             }
+        }
+
+        /// <summary>
+        /// Starts a test listener for ensuring connectivity with the server.
+        /// </summary>
+        /// <param name="messagesToListen">Number of messages the server should emit</param>
+        /// <param name="websocketSubscriptionUrl">Pass to override websocket server url</param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="TibberApiHttpException"></exception>
+        /// <returns>Return observable object providing values; you have to subscribe observer(s) to access the values. </returns>
+        public async Task<IObservable<RealTimeMeasurement>> StartTestMeasurementListener(int messagesToListen, string websocketSubscriptionUrl, CancellationToken cancellationToken = default)
+        {
+            var realTimeMeasurementListener = new RealTimeMeasurementListener(this, new Uri(websocketSubscriptionUrl), _accessToken);
+
+            var builder = new TibberApiSubscriptionQueryBuilder().WithTestMeasurement(new LiveMeasurementQueryBuilder().WithAllScalarFields(), messagesToListen, true);
+            return await realTimeMeasurementListener.SubscribeHome(Guid.NewGuid(), cancellationToken, builder);
         }
 
         /// <summary>
@@ -255,23 +263,20 @@ namespace Tibber.Sdk
             return Serializer.Deserialize<TResult>(jsonReader);
         }
 
-        private static HttpContent JsonContent(object data) =>
-            new StringContent(JsonConvert.SerializeObject(data, JsonSerializerSettings), Encoding.UTF8, "application/json");
+        private static HttpContent JsonContent(object data) => new StringContent(JsonConvert.SerializeObject(data, JsonSerializerSettings), Encoding.UTF8, "application/json");
 
         private static void ValidateResult(TibberApiQueryResponse response)
         {
             if (response.Errors is not null && response.Errors.Any())
-                throw new TibberApiException($"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, response.Errors.Select(e => $"{e.Message} (locations: {String.Join(";",  e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}");
+                throw new TibberApiException(
+                    $"Query execution failed:{Environment.NewLine}{String.Join(Environment.NewLine, response.Errors.Select(e => $"{e.Message} (locations: {String.Join(";", e.Locations.Select(l => $"line: {l.Line}, column: {l.Column}"))})"))}"
+                );
         }
     }
 
-    public class TibberApiQueryResponse : GraphQlResponse<QueryData>
-    {
-    }
+    public class TibberApiQueryResponse : GraphQlResponse<QueryData> { }
 
-    public class TibberApiMutationResponse : GraphQlResponse<TibberMutation>
-    {
-    }
+    public class TibberApiMutationResponse : GraphQlResponse<TibberMutation> { }
 
     public class QueryData
     {
