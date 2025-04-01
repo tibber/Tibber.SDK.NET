@@ -7,10 +7,10 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <Authors>Tibber</Authors>
     <Company>Tibber</Company>
-    <Version>0.5.1-beta</Version>
+    <Version>0.5.2-beta</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <Copyright>Copyright 2017-2022</Copyright>
+    <Copyright>Copyright 2017-2025</Copyright>
     <Title>Tibber SDK.NET</Title>
     <PackageLicenseFile>License.md</PackageLicenseFile>
     <PackageLicense>https://raw.githubusercontent.com/tibber/Tibber.SDK.NET/master/License.md</PackageLicense>
@@ -18,8 +18,14 @@
     <PackageIcon>TibberLogo.png</PackageIcon>
     <RepositoryUrl>https://github.com/tibber/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
-    <PackageReleaseNotes>added PowerReactive and PowerProductionReactive properties</PackageReleaseNotes>
+    <PackageReleaseNotes>
+      <![CDATA[
+      ]]>
+    </PackageReleaseNotes>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -27,9 +33,13 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFrameworks)', '^net\d'))">
 	<DefineConstants>NETFRAMEWORK</DefineConstants>
