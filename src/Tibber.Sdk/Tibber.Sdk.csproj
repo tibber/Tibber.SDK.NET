@@ -20,7 +20,10 @@
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
-    <PackageReleaseNotes>added PowerReactive and PowerProductionReactive properties</PackageReleaseNotes>
+    <PackageReleaseNotes>
+      <![CDATA[
+      ]]>
+    </PackageReleaseNotes>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
