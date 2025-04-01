@@ -18,6 +18,8 @@
     <PackageIcon>TibberLogo.png</PackageIcon>
     <RepositoryUrl>https://github.com/tibber/Tibber.SDK.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Tibber GraphQL .NET SDK</PackageTags>
     <PackageReleaseNotes>
