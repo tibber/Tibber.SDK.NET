@@ -1174,12 +1174,19 @@ namespace Tibber.Sdk
     public enum HeatingSource
     {
         [EnumMember(Value = "AIR2AIR_HEATPUMP")] Air2AirHeatpump,
-        [EnumMember(Value = "ELECTRICITY")] Electricity,
-        [EnumMember(Value = "GROUND")] Ground,
+        [EnumMember(Value = "AIR2WATER_HEATPUMP")] Air2WaterHeatpump,
+        [EnumMember(Value = "BOILER")] Boiler,
+        [EnumMember(Value = "CENTRAL_HEATING")] CentralHeating,
+        [EnumMember(Value = "DISTRICT")] District,
         [EnumMember(Value = "DISTRICT_HEATING")] DistrictHeating,
         [EnumMember(Value = "ELECTRIC_BOILER")] ElectricBoiler,
-        [EnumMember(Value = "AIR2WATER_HEATPUMP")] Air2WaterHeatpump,
-        [EnumMember(Value = "OTHER")] Other
+        [EnumMember(Value = "ELECTRICITY")] Electricity,
+        [EnumMember(Value = "FLOOR")] Floor,
+        [EnumMember(Value = "GAS")] Gas,
+        [EnumMember(Value = "GROUND")] Ground,
+        [EnumMember(Value = "OIL")] Oil,
+        [EnumMember(Value = "OTHER")] Other,
+        [EnumMember(Value = "WASTE")] Waste
     }
 
     public enum HomeAvatar
