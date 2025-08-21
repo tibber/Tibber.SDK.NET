@@ -8,7 +8,7 @@ Installation
 -------------
 Using nuget package manager:
 ```
-Install-Package Tibber.Sdk -Version 0.5.2-beta
+Install-Package Tibber.Sdk -Version 0.5.3-beta
 ```
 
 Authorization
@@ -165,3 +165,11 @@ var generationContext = new SingleFileGenerationContext(schema, writer) { LogMes
 generator.Generate(generationContext);
 var csharpCode = builder.ToString();
 ```
+
+## Publishing nuget
+
+- Update version number in project file and Readme
+- Run release build: `dotnet build -c Release src/Tibber.Sdk/Tibber.Sdk.csproj`
+- Export version as a variable: `export VERSION=0.5.3-beta`
+- Export your NuGet API key as an environment variable: `export NUGET_API_KEY=your-key-here`
+- Publish nuget: `dotnet nuget push src/Tibber.Sdk/bin/Release/Tibber.Sdk.$VERSION.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json`
