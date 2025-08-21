@@ -151,12 +151,17 @@ Generating classes using schema introspection
 -------------
 ```csharp
 // Install nuget https://github.com/Husqvik/GraphQlClientGenerator
-var schema = await GraphQlGenerator.RetrieveSchema(HttpMethod.Get, "https://app.tibber.com/v1-beta/gql");
-var configuration = new GraphQlGeneratorConfiguration();
+var schema = await GraphQlGenerator.RetrieveSchema(HttpMethod.Get, "https://api.tibber.com/v1-beta/gql");
+var configuration = new GraphQlGeneratorConfiguration { TargetNamespace = "Tibber.Sdk" };
 configuration.CustomClassNameMapping.Add("Consumption", "ConsumptionEntry");
 configuration.CustomClassNameMapping.Add("Production", "ProductionEntry");
 configuration.CustomClassNameMapping.Add("RootMutation", "TibberMutation");
 configuration.CustomClassNameMapping.Add("Query", "Tibber");
+configuration.CustomClassNameMapping.Add("RootSubscription", "TibberApiSubscription");
 var generator = new GraphQlGenerator(configuration);
-var generatedClasses = generator.Generate(schema);
+var builder = new StringBuilder();
+using var writer = new StringWriter(builder);
+var generationContext = new SingleFileGenerationContext(schema, writer) { LogMessage = Console.WriteLine };
+generator.Generate(generationContext);
+var csharpCode = builder.ToString();
 ```
