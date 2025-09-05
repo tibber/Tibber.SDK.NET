@@ -8,7 +8,7 @@ Installation
 -------------
 Using nuget package manager:
 ```
-Install-Package Tibber.Sdk -Version 0.5.3-beta
+Install-Package Tibber.Sdk -Version 0.6.0-beta
 ```
 
 Authorization
@@ -48,7 +48,11 @@ static async Task GetDataFromTibber(string accessToken)
                                 new SubscriptionQueryBuilder()
                                     .WithAllScalarFields()
                                     .WithSubscriber(new LegalEntityQueryBuilder().WithAllFields())
-                                    .WithPriceInfo(new PriceInfoQueryBuilder().WithCurrent(new PriceQueryBuilder().WithAllFields()))
+                                    .WithPriceInfo(
+                                        new PriceInfoQueryBuilder().WithCurrent(new PriceQueryBuilder().WithAllFields()),
+                                        // or omit or use `PriceInfoResolution.Hourly` for hourly prices; read more at https://developer.tibber.com/docs/changelog
+                                        resolution: PriceInfoResolution.QuarterHourly
+                                    )
                             )
                             .WithOwner(new LegalEntityQueryBuilder().WithAllFields())
                             .WithFeatures(new HomeFeaturesQueryBuilder().WithAllFields())

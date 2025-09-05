@@ -1073,6 +1073,8 @@ namespace Tibber.Sdk
         public const string HeatingSource = "HeatingSource";
         public const string HomeAvatar = "HomeAvatar";
         public const string HomeType = "HomeType";
+        public const string PriceInfoRangeResolution = "PriceInfoRangeResolution";
+        public const string PriceInfoResolution = "PriceInfoResolution";
         public const string PriceLevel = "PriceLevel";
         public const string PriceRatingLevel = "PriceRatingLevel";
         public const string PriceResolution = "PriceResolution";
@@ -1152,6 +1154,19 @@ namespace Tibber.Sdk
         [EnumMember(Value = "NORMAL")] Normal,
         [EnumMember(Value = "LOW")] Low,
         [EnumMember(Value = "HIGH")] High
+    }
+
+    public enum PriceInfoResolution
+    {
+        [EnumMember(Value = "HOURLY")] Hourly,
+        [EnumMember(Value = "QUARTER_HOURLY")] QuarterHourly
+    }
+
+    public enum PriceInfoRangeResolution
+    {
+        [EnumMember(Value = "DAILY")] Daily,
+        [EnumMember(Value = "HOURLY")] Hourly,
+        [EnumMember(Value = "QUARTER_HOURLY")] QuarterHourly
     }
 
     public enum EnergyResolution
@@ -2416,6 +2431,7 @@ namespace Tibber.Sdk
                 new GraphQlFieldMetadata { Name = "validTo" },
                 new GraphQlFieldMetadata { Name = "status" },
                 new GraphQlFieldMetadata { Name = "priceInfo", IsComplex = true, QueryBuilderType = typeof(PriceInfoQueryBuilder) },
+                new GraphQlFieldMetadata { Name = "priceInfoRange", RequiresParameters = true, IsComplex = true, QueryBuilderType = typeof(SubscriptionPriceConnectionQueryBuilder) },
                 new GraphQlFieldMetadata { Name = "priceRating", IsComplex = true, QueryBuilderType = typeof(PriceRatingQueryBuilder) }
             };
 
@@ -2473,14 +2489,42 @@ namespace Tibber.Sdk
             return ExceptField("status");
         }
 
-        public SubscriptionQueryBuilder WithPriceInfo(PriceInfoQueryBuilder priceInfoQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        public SubscriptionQueryBuilder WithPriceInfo(PriceInfoQueryBuilder priceInfoQueryBuilder, QueryBuilderParameter<PriceInfoResolution?> resolution = null, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
         {
-            return WithObjectField("priceInfo", alias, priceInfoQueryBuilder, new GraphQlDirective[] { include, skip });
+            var args = new List<QueryBuilderArgumentInfo>();
+            if (resolution != null)
+                args.Add(new QueryBuilderArgumentInfo { ArgumentName = "resolution", ArgumentValue = resolution} );
+
+            return WithObjectField("priceInfo", alias, priceInfoQueryBuilder, new GraphQlDirective[] { include, skip }, args);
         }
 
         public SubscriptionQueryBuilder ExceptPriceInfo()
         {
             return ExceptField("priceInfo");
+        }
+
+        public SubscriptionQueryBuilder WithPriceInfoRange(SubscriptionPriceConnectionQueryBuilder subscriptionPriceConnectionQueryBuilder, QueryBuilderParameter<PriceInfoRangeResolution> resolution, QueryBuilderParameter<int?> first = null, QueryBuilderParameter<int?> last = null, QueryBuilderParameter<string> before = null, QueryBuilderParameter<string> after = null, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
+        {
+            var args = new List<QueryBuilderArgumentInfo>();
+            args.Add(new QueryBuilderArgumentInfo { ArgumentName = "resolution", ArgumentValue = resolution} );
+            if (first != null)
+                args.Add(new QueryBuilderArgumentInfo { ArgumentName = "first", ArgumentValue = first} );
+
+            if (last != null)
+                args.Add(new QueryBuilderArgumentInfo { ArgumentName = "last", ArgumentValue = last} );
+
+            if (before != null)
+                args.Add(new QueryBuilderArgumentInfo { ArgumentName = "before", ArgumentValue = before} );
+
+            if (after != null)
+                args.Add(new QueryBuilderArgumentInfo { ArgumentName = "after", ArgumentValue = after} );
+
+            return WithObjectField("priceInfoRange", alias, subscriptionPriceConnectionQueryBuilder, new GraphQlDirective[] { include, skip }, args);
+        }
+
+        public SubscriptionQueryBuilder ExceptPriceInfoRange()
+        {
+            return ExceptField("priceInfoRange");
         }
 
         public SubscriptionQueryBuilder WithPriceRating(PriceRatingQueryBuilder priceRatingQueryBuilder, string alias = null, IncludeDirective include = null, SkipDirective skip = null)
@@ -4135,6 +4179,7 @@ namespace Tibber.Sdk
         public DateTimeOffset? ValidTo { get; set; }
         public string Status { get; set; }
         public PriceInfo PriceInfo { get; set; }
+        public SubscriptionPriceConnection PriceInfoRange { get; set; }
         public PriceRating PriceRating { get; set; }
     }
 
