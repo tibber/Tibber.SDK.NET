@@ -1,0 +1,13 @@
+{
+  "enabledPlugins": {
+    "fa-platform-plugin@tibber-claude-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "tibber-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "tibber/claude-plugins"
+      }
+    }
+  }
+}
