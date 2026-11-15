@@ -5,8 +5,10 @@ metadata:
   annotations:
     github.com/project-slug: tibber/Tibber.SDK.NET
     circleci.com/project-slug: gh/tibber/Tibber.SDK.NET
+    roadie.io/use-codeowners: "true"
   tags:
   - net
 spec:
   type: library
   lifecycle: production
+  owner: codeowners
